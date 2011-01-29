@@ -70,65 +70,8 @@ function love.load()
 
 end
 
-function love.update(dt)
-    local kb = love.keyboard
-
-    -- calculate correction factor
-    correction = dino.torso.body:getAngle() % (2 * math.pi)
-    if correction >= math.pi / 2 and correction <= 3 * math.pi / 2 then
-        correction = 0
-    elseif correction > 3 * math.pi / 2 then
-        correction = 2 * math.pi - correction
-    end
-    correction = correction / (math.pi / 2)
-    
-    if kb.isDown("a") then
-        -- apply user thrust on the right
-        dino.thrusterR = vector.new(dino.torso.body:getX() + dino.THRUSTER_DIST * math.cos(dino.torso.body:getAngle()),
-                                    dino.torso.body:getY() + dino.THRUSTER_DIST * math.sin(dino.torso.body:getAngle()))
-        dino.torso.body:applyForce(-100 * math.cos(dino.torso.body:getAngle() + (math.pi / 2)), -100 * math.sin(dino.torso.body:getAngle() + (math.pi / 2)), dino.thrusterR.x, dino.thrusterR.y)
-    elseif not kb.isDown("a") and kb.isDown("d") then
-        -- apply autocorrect on the right
-        dino.thrusterR = vector.new(dino.torso.body:getX() + dino.THRUSTER_DIST * math.cos(dino.torso.body:getAngle()),
-                                    dino.torso.body:getY() + dino.THRUSTER_DIST * math.sin(dino.torso.body:getAngle()))
-        dino.torso.body:applyForce(-25 * correction * math.cos(dino.torso.body:getAngle() + (math.pi / 2)), -25 * correction * math.sin(dino.torso.body:getAngle() + (math.pi / 2)), dino.thrusterR.x, dino.thrusterR.y)
-    end
-    
-    if kb.isDown("d") then
-        -- apply user thrust on the left
-        dino.thrusterL = vector.new(dino.torso.body:getX() - dino.THRUSTER_DIST * math.cos(dino.torso.body:getAngle()),
-                                    dino.torso.body:getY() - dino.THRUSTER_DIST * math.sin(dino.torso.body:getAngle()))
-        dino.torso.body:applyForce(-100 * math.cos(dino.torso.body:getAngle() + (math.pi / 2)), -100 * math.sin(dino.torso.body:getAngle() + (math.pi / 2)), dino.thrusterL.x, dino.thrusterL.y)
-    elseif not kb.isDown("d") and kb.isDown("a") then
-        -- apply autocorrect on the left
-        dino.thrusterL = vector.new(dino.torso.body:getX() - dino.THRUSTER_DIST * math.cos(dino.torso.body:getAngle()),
-                                    dino.torso.body:getY() - dino.THRUSTER_DIST * math.sin(dino.torso.body:getAngle()))
-        dino.torso.body:applyForce(-25 * correction * math.cos(dino.torso.body:getAngle() + (math.pi / 2)), -25 * correction * math.sin(dino.torso.body:getAngle() + (math.pi / 2)), dino.thrusterL.x, dino.thrusterL.y)
-    end
-
-
-    --[[
-    if love.keyboard.isDown("a") or love.keyboard.isDown("d") then
-        -- calculate thruster positions and swap if necessary
-        dino.thrusterL = vector.new(dino.torso.body:getX() - dino.THRUSTER_DIST * math.cos(dino.torso.body:getAngle()),
-                                    dino.torso.body:getY() - dino.THRUSTER_DIST * math.sin(dino.torso.body:getAngle()))
-        dino.thrusterR = vector.new(dino.torso.body:getX() + dino.THRUSTER_DIST * math.cos(dino.torso.body:getAngle()),
-                                    dino.torso.body:getY() + dino.THRUSTER_DIST * math.sin(dino.torso.body:getAngle()))
-        
-        -- "d" controls the left thruster
-        if love.keyboard.isDown("d") then
-            dino.torso.body:applyForce(-100 * math.cos(dino.torso.body:getAngle() + (math.pi / 2)), -100 * math.sin(dino.torso.body:getAngle() + (math.pi / 2)), dino.thrusterL.x, dino.thrusterL.y)
-        end
-        
-        -- "a" controls the right thruster
-        if love.keyboard.isDown("a") then
-            dino.torso.body:applyForce(-100 * math.cos(dino.torso.body:getAngle() + (math.pi / 2)), -100 * math.sin(dino.torso.body:getAngle() + (math.pi / 2)), dino.thrusterR.x, dino.thrusterR.y)
-        end
-    end
-    --]]
-    
+function love.update(dt)    
     dino:update(dt)
-    
     world:update(dt)
 
 end
@@ -139,13 +82,6 @@ function love.draw()
     -- draw walls
     gfx.setColor(0, 0, 0)
 
-    --[[    
-    drawSimpleRect(walls.left)
-    drawSimpleRect(walls.right)
-    drawSimpleRect(walls.top)
-    drawSimpleRect(walls.bottom)
-    --]]
-
     for k,v in pairs(walls) do v:draw() end
 
     dino:draw()
@@ -154,10 +90,18 @@ function love.draw()
 
     
     gfx.setColor(0, 255, 0)
-    gfx.point(dino.thrusterL.x, dino.thrusterL.y)
+    gfx.setLine(5, "smooth")
+    gfx.line(dino.thrusterLpos.x, dino.thrusterLpos.y, dino.thrusterLpos.x - dino.thrusterLdir.x, dino.thrusterLpos.y - dino.thrusterLdir.y)
     gfx.setColor(0, 0, 255)
-    gfx.point(dino.thrusterR.x, dino.thrusterR.y)
+    gfx.setLine(5, "smooth")
+    gfx.line(dino.thrusterRpos.x, dino.thrusterRpos.y, dino.thrusterRpos.x - dino.thrusterRdir.x, dino.thrusterRpos.y - dino.thrusterRdir.y)
     
     gfx.setColor(255, 255, 255)
     gfx.draw(test, 50, 50, 0, 5, 5)
+end
+
+function love.keypressed(key, unicode)
+    if key == " " then
+        dino:right()
+    end
 end
