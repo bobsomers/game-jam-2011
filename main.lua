@@ -15,7 +15,7 @@ world = nil
 walls = {
 }
 
-dino = Dinosaur
+dino = Dinosaur:new()
 
 
 function love.load()

@@ -1,15 +1,24 @@
 
 -- template dinosaur dataset
-Dinosaur = {
-    THRUSTER_DIST = 20,
-    head = {},
-    foot = {},
-    torso = {}
-}
+Dinosaur = {}
 
 local gfx = love.graphics
 local phys = love.physics
 local vector = hump.vector
+
+function Dinosaur:new (o)
+
+    o = o or { 
+                THRUSTER_DIST = 20,
+                head = {},
+                foot = {},
+                torso = {}
+             }
+
+    setmetatable(o, self)
+    self.__index = self
+    return o
+end
 
 function Dinosaur.initTorso(self, x, y)
 
