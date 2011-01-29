@@ -25,8 +25,10 @@ function Dinosaur.initTorso(self, x, y)
 
     self.torso.body = phys.newBody(world, x, y, 10, 15)
     self.torso.shape = phys.newRectangleShape(dino.torso.body, 0, 0, 100, 50, 0)
-    self.thrusterL = vector.new(dino.torso.body:getX() - dino.THRUSTER_DIST, dino.torso.body:getY())
-    self.thrusterR = vector.new(dino.torso.body:getX() + dino.THRUSTER_DIST, dino.torso.body:getY())
+    self.thrusterLpos = vector.new(dino.torso.body:getX() - dino.THRUSTER_DIST, dino.torso.body:getY())
+    self.thrusterRpos = vector.new(dino.torso.body:getX() + dino.THRUSTER_DIST, dino.torso.body:getY())
+    self.thrusterLdir = vector.new(0, 0)
+    self.thrusterRdir = vector.new(0, 0)
 
     self.foot.body = phys.newBody(world, x, y - 25, 5, 7)
     self.foot.shape = phys.newRectangleShape(dino.foot.body, 0, 0, 50, 50, 0)
@@ -65,29 +67,44 @@ function Dinosaur.draw(self)
 end
 
 function Dinosaur.update(self, dt)
+    local kb = love.keyboard
 
     dinoAngle = self.torso.body:getAngle()
 
-    if love.keyboard.isDown("a") or love.keyboard.isDown("d") then
-
-        dino.thrusterL = vector.new(self.torso.body:getX() - self.THRUSTER_DIST * math.cos(dinoAngle),
-                                    self.torso.body:getY() - self.THRUSTER_DIST * math.sin(dinoAngle))
-        dino.thrusterR = vector.new(self.torso.body:getX() + self.THRUSTER_DIST * math.cos(dinoAngle),
-                                    self.torso.body:getY() + self.THRUSTER_DIST * math.sin(dinoAngle))
+    -- calculate correction factor
+    --[[
+    correction = dino.torso.body:getAngle() % (2 * math.pi)
+    if correction >= math.pi / 2 and correction <= 3 * math.pi / 2 then
+        correction = 0
+    elseif correction > 3 * math.pi / 2 then
+        correction = 2 * math.pi - correction
+    end
+    correction = correction / (math.pi / 2)
+    --]]
+    
+    -- calculate thruster positions and directions
+    self.thrusterLpos = vector.new(self.torso.body:getX() - self.THRUSTER_DIST * math.cos(dinoAngle),
+                                   self.torso.body:getY() - self.THRUSTER_DIST * math.sin(dinoAngle))
+    self.thrusterRpos = vector.new(self.torso.body:getX() + self.THRUSTER_DIST * math.cos(dinoAngle),
+                                   self.torso.body:getY() + self.THRUSTER_DIST * math.sin(dinoAngle))
+    
+    if kb.isDown("a") then
+        -- apply thrust on the right
+        self.thrusterRdir = vector.new(-100 * math.cos(dinoAngle + (math.pi / 2)),
+                                       -100 * math.sin(dinoAngle + (math.pi / 2)))
+        self.torso.body:applyForce(self.thrusterRdir.x, self.thrusterRdir.y, self.thrusterRpos.x, self.thrusterRpos.y)
         
-        -- "d" controls the left thruster
-        if love.keyboard.isDown("d") then
-            self.torso.body:applyForce(-100 * math.cos(dinoAngle + (math.pi / 2)), 
-                                       -100 * math.sin(dinoAngle + (math.pi / 2)), 
-                                       self.thrusterL.x, self.thrusterL.y)
-        end
-        
-        -- "a" controls the right thruster
-        if love.keyboard.isDown("a") then
-            self.torso.body:applyForce(-100 * math.cos(dinoAngle + (math.pi / 2)), 
-                                       -100 * math.sin(dinoAngle + (math.pi / 2)), 
-                                       self.thrusterR.x, self.thrusterR.y)
-        end
+    else
+        self.thrusterRdir = vector.new(0, 0)
+    end
+    
+    if kb.isDown("d") then
+        -- apply thrust on the left
+        self.thrusterLdir = vector.new(-100 * math.cos(dinoAngle + (math.pi / 2)),
+                                       -100 * math.sin(dinoAngle + (math.pi / 2)))
+        self.torso.body:applyForce(self.thrusterLdir.x, self.thrusterLdir.y, self.thrusterLpos.x, self.thrusterLpos.y)
+    else
+        self.thrusterLdir = vector.new(0, 0)
     end
 
     if love.keyboard.isDown("s") then
