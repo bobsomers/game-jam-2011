@@ -1,5 +1,8 @@
 require "hump.vector"
 
+dofile "dinosaur.lua"
+dofile "obstacle.lua"
+
 local vector = hump.vector
 
 SCREEN_WIDTH = 800
@@ -7,44 +10,47 @@ SCREEN_HEIGHT = 600
 ARENA_WIDTH = 800
 ARENA_HEIGHT = 600
 
+world = nil
+
 walls = {
-    left = {},
-    right = {},
-    top = {},
-    bottom = {}
 }
 
-dino = {
-    THRUSTER_DIST = 20,
-    head = {},
-    foot = {},
-    torso = {}
-}
+dino = Dinosaur:new()
+
 
 test = love.graphics.newImage("head01.png")
 
 function love.load()
+    
     local gfx = love.graphics
     local phys = love.physics
-    
+
     gfx.setBackgroundColor(255, 255, 255)
     
     world = phys.newWorld(0, 0, 800, 600)
     world:setGravity(0, 350)
     
-    walls.left.body = phys.newBody(world, 2, ARENA_HEIGHT / 2, 0, 0)
-	walls.left.shape = phys.newRectangleShape(walls.left.body, 0, 0, 5, ARENA_HEIGHT, 0)
-	walls.right.body = phys.newBody(world, ARENA_WIDTH - 2, ARENA_HEIGHT / 2, 0, 0)
-	walls.right.shape = phys.newRectangleShape(walls.right.body, 0, 0, 5, ARENA_HEIGHT, 0)
-	walls.top.body = phys.newBody(world, ARENA_WIDTH / 2, 2, 0, 0)
-	walls.top.shape = phys.newRectangleShape(walls.top.body, 0, 0, ARENA_WIDTH, 5, 0)
-	walls.bottom.body = phys.newBody(world, ARENA_WIDTH / 2, ARENA_HEIGHT - 2, 0, 0)
-	walls.bottom.shape = phys.newRectangleShape(walls.bottom.body, 0, 0, ARENA_WIDTH, 5, 0)
-    
-    dino.torso.body = phys.newBody(world, 400, ARENA_HEIGHT - 200, 10, 15)
-    dino.torso.shape = phys.newRectangleShape(dino.torso.body, 0, 0, 100, 50, 0)
-    dino.thrusterL = vector.new(dino.torso.body:getX() - dino.THRUSTER_DIST, dino.torso.body:getY())
-    dino.thrusterR = vector.new(dino.torso.body:getX() + dino.THRUSTER_DIST, dino.torso.body:getY())
+    left = Obstacle:new()
+    left:initialize(2, ARENA_HEIGHT / 2, 5, ARENA_HEIGHT)
+    walls[#walls+1] = left
+
+    right = Obstacle:new()
+    right:initialize(ARENA_WIDTH - 2, ARENA_HEIGHT / 2, 5, ARENA_HEIGHT)
+    walls[#walls+1] = right
+
+    top = Obstacle:new()
+    top:initialize(ARENA_WIDTH / 2, 2, ARENA_WIDTH, 5)
+    walls[#walls+1] = top
+
+    bottom = Obstacle:new()
+    bottom:initialize(ARENA_WIDTH / 2, ARENA_HEIGHT - 2, ARENA_WIDTH, 5)
+    walls[#walls+1] = bottom
+
+
+    --dino.foot.body = phys.newBody(world, 400, ARENA_HEIGHT - 200, 10, 15)
+    --dino.foot.shape = phys.newRectangleShape(dino.foot.body, 0, 0, 50, 50, 0)
+
+    dino:initialize(400, 400)
 
 end
 
@@ -105,16 +111,10 @@ function love.update(dt)
     end
     --]]
     
-    
+    dino:update(dt)
     
     world:update(dt)
-end
 
-function drawSimpleRect(obj)
-    local x1, y1, x2, y2, x3, y3, x4, y4 = obj.shape:getBoundingBox()
-    local w = x3 - x2
-    local h = y2 - y1
-    love.graphics.rectangle("fill", obj.body:getX() - (w / 2), obj.body:getY() - (h / 2), w, h)
 end
 
 function love.draw()
@@ -122,25 +122,17 @@ function love.draw()
     
     -- draw walls
     gfx.setColor(0, 0, 0)
+
+    --[[    
     drawSimpleRect(walls.left)
     drawSimpleRect(walls.right)
     drawSimpleRect(walls.top)
     drawSimpleRect(walls.bottom)
-    
-    -- body
-    gfx.push()
-    gfx.translate(dino.torso.body:getX(), dino.torso.body:getY())
-    gfx.rotate(dino.torso.body:getAngle())
-    gfx.setColor(255, 0, 0)
-    gfx.rectangle("fill", -50, -25, 100, 50)
+    --]]
 
+    for k,v in pairs(walls) do v:draw() end
 
-        -- left leg
-        gfx.push()
-        gfx.translate(0, 25, 0)
-        gfx.setColor(0, 255, 0)
-        gfx.rectangle("fill", -10, -10, 10, 10)
-        gfx.pop()
+    dino:draw()
 
     gfx.pop()
 
