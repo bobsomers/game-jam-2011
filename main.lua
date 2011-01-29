@@ -21,6 +21,8 @@ dino = {
     torso = {}
 }
 
+test = love.graphics.newImage("head01.png")
+
 function love.load()
     local gfx = love.graphics
     local phys = love.physics
@@ -47,15 +49,49 @@ function love.load()
 end
 
 function love.update(dt)
+    local kb = love.keyboard
+
+    -- calculate correction factor
+    correction = dino.torso.body:getAngle() % (2 * math.pi)
+    if correction >= math.pi / 2 and correction <= 3 * math.pi / 2 then
+        correction = 0
+    elseif correction > 3 * math.pi / 2 then
+        correction = 2 * math.pi - correction
+    end
+    correction = correction / (math.pi / 2)
+    
+    if kb.isDown("a") then
+        -- apply user thrust on the right
+        dino.thrusterR = vector.new(dino.torso.body:getX() + dino.THRUSTER_DIST * math.cos(dino.torso.body:getAngle()),
+                                    dino.torso.body:getY() + dino.THRUSTER_DIST * math.sin(dino.torso.body:getAngle()))
+        dino.torso.body:applyForce(-100 * math.cos(dino.torso.body:getAngle() + (math.pi / 2)), -100 * math.sin(dino.torso.body:getAngle() + (math.pi / 2)), dino.thrusterR.x, dino.thrusterR.y)
+    elseif not kb.isDown("a") and kb.isDown("d") then
+        -- apply autocorrect on the right
+        dino.thrusterR = vector.new(dino.torso.body:getX() + dino.THRUSTER_DIST * math.cos(dino.torso.body:getAngle()),
+                                    dino.torso.body:getY() + dino.THRUSTER_DIST * math.sin(dino.torso.body:getAngle()))
+        dino.torso.body:applyForce(-25 * correction * math.cos(dino.torso.body:getAngle() + (math.pi / 2)), -25 * correction * math.sin(dino.torso.body:getAngle() + (math.pi / 2)), dino.thrusterR.x, dino.thrusterR.y)
+    end
+    
+    if kb.isDown("d") then
+        -- apply user thrust on the left
+        dino.thrusterL = vector.new(dino.torso.body:getX() - dino.THRUSTER_DIST * math.cos(dino.torso.body:getAngle()),
+                                    dino.torso.body:getY() - dino.THRUSTER_DIST * math.sin(dino.torso.body:getAngle()))
+        dino.torso.body:applyForce(-100 * math.cos(dino.torso.body:getAngle() + (math.pi / 2)), -100 * math.sin(dino.torso.body:getAngle() + (math.pi / 2)), dino.thrusterL.x, dino.thrusterL.y)
+    elseif not kb.isDown("d") and kb.isDown("a") then
+        -- apply autocorrect on the left
+        dino.thrusterL = vector.new(dino.torso.body:getX() - dino.THRUSTER_DIST * math.cos(dino.torso.body:getAngle()),
+                                    dino.torso.body:getY() - dino.THRUSTER_DIST * math.sin(dino.torso.body:getAngle()))
+        dino.torso.body:applyForce(-25 * correction * math.cos(dino.torso.body:getAngle() + (math.pi / 2)), -25 * correction * math.sin(dino.torso.body:getAngle() + (math.pi / 2)), dino.thrusterL.x, dino.thrusterL.y)
+    end
+
+
+    --[[
     if love.keyboard.isDown("a") or love.keyboard.isDown("d") then
         -- calculate thruster positions and swap if necessary
         dino.thrusterL = vector.new(dino.torso.body:getX() - dino.THRUSTER_DIST * math.cos(dino.torso.body:getAngle()),
                                     dino.torso.body:getY() - dino.THRUSTER_DIST * math.sin(dino.torso.body:getAngle()))
         dino.thrusterR = vector.new(dino.torso.body:getX() + dino.THRUSTER_DIST * math.cos(dino.torso.body:getAngle()),
                                     dino.torso.body:getY() + dino.THRUSTER_DIST * math.sin(dino.torso.body:getAngle()))
-        if dino.thrusterL.x > dino.thrusterR.x then
-            dino.thrusterL, dino.thrusterR = dino.thrusterR, dino.thrusterL
-        end
         
         -- "d" controls the left thruster
         if love.keyboard.isDown("d") then
@@ -67,6 +103,9 @@ function love.update(dt)
             dino.torso.body:applyForce(-100 * math.cos(dino.torso.body:getAngle() + (math.pi / 2)), -100 * math.sin(dino.torso.body:getAngle() + (math.pi / 2)), dino.thrusterR.x, dino.thrusterR.y)
         end
     end
+    --]]
+    
+    
     
     world:update(dt)
 end
@@ -110,4 +149,7 @@ function love.draw()
     gfx.point(dino.thrusterL.x, dino.thrusterL.y)
     gfx.setColor(0, 0, 255)
     gfx.point(dino.thrusterR.x, dino.thrusterR.y)
+    
+    gfx.setColor(255, 255, 255)
+    gfx.draw(test, 50, 50, 0, 5, 5)
 end
