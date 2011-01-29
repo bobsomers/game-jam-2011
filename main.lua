@@ -43,6 +43,7 @@ function love.load()
     dino.torso.shape = phys.newRectangleShape(dino.torso.body, 0, 0, 100, 50, 0)
     dino.thrusterL = vector.new(dino.torso.body:getX() - dino.THRUSTER_DIST, dino.torso.body:getY())
     dino.thrusterR = vector.new(dino.torso.body:getX() + dino.THRUSTER_DIST, dino.torso.body:getY())
+
 end
 
 function love.update(dt)
@@ -58,12 +59,12 @@ function love.update(dt)
         
         -- "d" controls the left thruster
         if love.keyboard.isDown("d") then
-            dino.torso.body:applyForce(25, -100, dino.thrusterL.x, dino.thrusterL.y)
+            dino.torso.body:applyForce(-100 * math.cos(dino.torso.body:getAngle() + (math.pi / 2)), -100 * math.sin(dino.torso.body:getAngle() + (math.pi / 2)), dino.thrusterL.x, dino.thrusterL.y)
         end
         
         -- "a" controls the right thruster
         if love.keyboard.isDown("a") then
-            dino.torso.body:applyForce(-25, -100, dino.thrusterR.x, dino.thrusterR.y)
+            dino.torso.body:applyForce(-100 * math.cos(dino.torso.body:getAngle() + (math.pi / 2)), -100 * math.sin(dino.torso.body:getAngle() + (math.pi / 2)), dino.thrusterR.x, dino.thrusterR.y)
         end
     end
     
@@ -87,12 +88,23 @@ function love.draw()
     drawSimpleRect(walls.top)
     drawSimpleRect(walls.bottom)
     
+    -- body
     gfx.push()
     gfx.translate(dino.torso.body:getX(), dino.torso.body:getY())
     gfx.rotate(dino.torso.body:getAngle())
     gfx.setColor(255, 0, 0)
     gfx.rectangle("fill", -50, -25, 100, 50)
+
+
+        -- left leg
+        gfx.push()
+        gfx.translate(0, 25, 0)
+        gfx.setColor(0, 255, 0)
+        gfx.rectangle("fill", -10, -10, 10, 10)
+        gfx.pop()
+
     gfx.pop()
+
     
     gfx.setColor(0, 255, 0)
     gfx.point(dino.thrusterL.x, dino.thrusterL.y)
