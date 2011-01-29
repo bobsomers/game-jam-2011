@@ -41,7 +41,7 @@ function love.load()
     local gfx = love.graphics
     local phys = love.physics
 
-    gfx.setBackgroundColor(255, 255, 255)
+    gfx.setBackgroundColor(0, 0, 0)
     
     world = phys.newWorld(0, 0, 800, 600)
     world:setGravity(0, 350)
@@ -88,13 +88,15 @@ function love.draw()
 
     gfx.pop()
 
-    
+    --[[
+    -- thruster debug drawing
     gfx.setColor(0, 255, 0)
     gfx.setLine(5, "smooth")
-    gfx.line(dino.thrusterLpos.x, dino.thrusterLpos.y, dino.thrusterLpos.x - dino.thrusterLdir.x, dino.thrusterLpos.y - dino.thrusterLdir.y)
+    gfx.line(dino.thruster.left.pos.x, dino.thruster.left.pos.y, dino.thruster.left.pos.x - dino.thruster.left.dir.x, dino.thruster.left.pos.y - dino.thruster.left.dir.y)
     gfx.setColor(0, 0, 255)
     gfx.setLine(5, "smooth")
-    gfx.line(dino.thrusterRpos.x, dino.thrusterRpos.y, dino.thrusterRpos.x - dino.thrusterRdir.x, dino.thrusterRpos.y - dino.thrusterRdir.y)
+    gfx.line(dino.thruster.right.pos.x, dino.thruster.right.pos.y, dino.thruster.right.pos.x - dino.thruster.right.dir.x, dino.thruster.right.pos.y - dino.thruster.right.dir.y)
+    --]]
     
     gfx.setColor(255, 255, 255)
     gfx.draw(test, 50, 50, 0, 5, 5)
