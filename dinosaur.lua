@@ -9,7 +9,7 @@ local vector = hump.vector
 function Dinosaur:new (o)
 
     o = o or { 
-                THRUSTER_DIST = 20,
+                THRUSTER_DIST = 25,
                 head = {},
                 foot = {},
                 torso = {}
@@ -30,10 +30,10 @@ function Dinosaur.initTorso(self, x, y)
     self.thrusterLdir = vector.new(0, 0)
     self.thrusterRdir = vector.new(0, 0)
 
-    self.foot.body = phys.newBody(world, x, y - 25, 5, 7)
-    self.foot.shape = phys.newRectangleShape(dino.foot.body, 0, 0, 50, 50, 0)
+    --self.foot.body = phys.newBody(world, x, y - 25, 5, 7)
+    --self.foot.shape = phys.newRectangleShape(dino.foot.body, 0, 0, 50, 50, 0)
 
-    joint = love.physics.newDistanceJoint( self.torso.body, self.foot.body, x, y, x, y-25 )
+    --joint = love.physics.newDistanceJoint( self.torso.body, self.foot.body, x, y, x, y-25 )
 
 end
 
@@ -56,13 +56,14 @@ function Dinosaur.draw(self)
     gfx.pop()
 
         -- left leg
+        --[[
         gfx.push()
         gfx.translate(self.foot.body:getX(), self.foot.body:getY())
         gfx.rotate(self.foot.body:getAngle())
         gfx.setColor(0, 255, 0)
         gfx.rectangle("fill", -25, -25, 50, 50)
         gfx.pop()
-
+        --]]
 
 end
 
@@ -72,15 +73,16 @@ function Dinosaur.update(self, dt)
     dinoAngle = self.torso.body:getAngle()
 
     -- calculate correction factor
-    --[[
+    -- warning: major voodoo ahead
     correction = dino.torso.body:getAngle() % (2 * math.pi)
     if correction >= math.pi / 2 and correction <= 3 * math.pi / 2 then
         correction = 0
     elseif correction > 3 * math.pi / 2 then
         correction = 2 * math.pi - correction
     end
-    correction = correction / (math.pi / 2)
-    --]]
+    correction = 1 - (correction / (math.pi / 2))
+    if correction < 0.1 then correction = 0 end
+    correction = math.exp(-2 * correction)
     
     -- calculate thruster positions and directions
     self.thrusterLpos = vector.new(self.torso.body:getX() - self.THRUSTER_DIST * math.cos(dinoAngle),
@@ -90,25 +92,27 @@ function Dinosaur.update(self, dt)
     
     if kb.isDown("a") then
         -- apply thrust on the right
-        self.thrusterRdir = vector.new(-100 * math.cos(dinoAngle + (math.pi / 2)),
-                                       -100 * math.sin(dinoAngle + (math.pi / 2)))
-        self.torso.body:applyForce(self.thrusterRdir.x, self.thrusterRdir.y, self.thrusterRpos.x, self.thrusterRpos.y)
-        
+        self.thrusterRdir = vector.new(-150 * math.cos(dinoAngle - (math.pi / 10) + (math.pi / 2)),
+                                       -150 * math.sin(dinoAngle - (math.pi / 10) + (math.pi / 2)))
     else
-        self.thrusterRdir = vector.new(0, 0)
+        -- apply autocorrecting thrust on the right
+        self.thrusterRdir = vector.new(-100 * correction * math.cos(dinoAngle - (math.pi / 10) + (math.pi / 2)),
+                                       -100 * correction * math.sin(dinoAngle - (math.pi / 10) + (math.pi / 2)))
     end
+    self.torso.body:applyForce(self.thrusterRdir.x, self.thrusterRdir.y, self.thrusterRpos.x, self.thrusterRpos.y)
     
     if kb.isDown("d") then
         -- apply thrust on the left
-        self.thrusterLdir = vector.new(-100 * math.cos(dinoAngle + (math.pi / 2)),
-                                       -100 * math.sin(dinoAngle + (math.pi / 2)))
-        self.torso.body:applyForce(self.thrusterLdir.x, self.thrusterLdir.y, self.thrusterLpos.x, self.thrusterLpos.y)
+        self.thrusterLdir = vector.new(-150 * math.cos(dinoAngle + (math.pi / 10) + (math.pi / 2)),
+                                       -150 * math.sin(dinoAngle + (math.pi / 10) + (math.pi / 2)))
     else
-        self.thrusterLdir = vector.new(0, 0)
+        -- apply autocorrecting thrust on the left
+        self.thrusterLdir = vector.new(-100 * correction * math.cos(dinoAngle + (math.pi / 10) + (math.pi / 2)),
+                                       -100 * correction * math.sin(dinoAngle + (math.pi / 10) + (math.pi / 2)))
     end
+    self.torso.body:applyForce(self.thrusterLdir.x, self.thrusterLdir.y, self.thrusterLpos.x, self.thrusterLpos.y)
+end
 
-    if love.keyboard.isDown("s") then
-        self.torso.body:applyImpulse(0, -20, self.torso.body:getX(), self.torso.body:getY())
-    end
-
+function Dinosaur.right(self)
+    self.torso.body:applyImpulse(0, -50, self.torso.body:getX() - 75, self.torso.body:getY())
 end

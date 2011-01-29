@@ -84,3 +84,9 @@ function love.draw()
     gfx.setColor(255, 255, 255)
     gfx.draw(test, 50, 50, 0, 5, 5)
 end
+
+function love.keypressed(key, unicode)
+    if key == " " then
+        dino:right()
+    end
+end
