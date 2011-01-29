@@ -46,12 +46,12 @@ function Dinosaur.draw(self)
     gfx.rectangle("fill", -50, -25, 100, 50)
 
 
-        -- left leg
-        gfx.push()
-        gfx.translate(0, 25, 0)
-        gfx.setColor(0, 255, 0)
-        gfx.rectangle("fill", -25, -25, 50, 50)
-        gfx.pop()
+    -- left leg
+    gfx.push()
+    gfx.translate(0, 25, 0)
+    gfx.setColor(0, 255, 0)
+    gfx.rectangle("fill", -25, -25, 50, 50)
+    gfx.pop()
 
 end
 

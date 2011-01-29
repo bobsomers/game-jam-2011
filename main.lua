@@ -1,7 +1,7 @@
 require "hump.vector"
 
-dofile "dinosaur.lua"
-dofile "obstacle.lua"
+dofile "game/dinosaur.lua"
+dofile "game/obstacle.lua"
 
 local vector = hump.vector
 
@@ -19,6 +19,7 @@ dino = Dinosaur:new()
 
 
 test = love.graphics.newImage("head01.png")
+test:setFilter("nearest", "nearest")
 
 function love.load()
     
