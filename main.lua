@@ -76,6 +76,16 @@ function love.load()
     timerFont = gfx.newFont("fonts/prehistoric.ttf", 48)
     overFont = gfx.newFont("fonts/prehistoric.ttf", 72)
     infoFont = gfx.newFont("fonts/prehistoric.ttf", 24)
+    
+    -- sound
+    bgmusic = love.audio.newSource("sound/music.mp3")
+    bgmusic:setVolume(0.5)
+    jetpacksound = love.audio.newSource("sound/jetpack.wav", "static")
+    jetpacksound:setLooping(true)
+    boomsound = love.audio.newSource("sound/boom.wav", "static")
+    launchsound = love.audio.newSource("sound/launch.wav", "static")
+    
+    love.audio.play(bgmusic)
 end
 
 function love.update(dt)    
@@ -237,6 +247,16 @@ function love.draw()
     end
 end
 
+function love.keyreleased(key, unicode)
+    if gameState == "playing" then
+        if key == "a" or key == "d" then
+            if not jetpacksound:isStopped() then
+                love.audio.stop(jetpacksound)
+            end
+        end
+    end
+end
+
 function love.keypressed(key, unicode)
     if gameState == "playing" then
         if key == " " then
@@ -245,10 +265,20 @@ function love.keypressed(key, unicode)
             local dinovelX, dinovelY = dino.torso.body:getLinearVelocity()
             missiles[tostring(missiles.id)] = Missile(world, dino.torso.body:getX(), dino.torso.body:getY(), dino.torso.body:getAngle(), vector.new(dinovelX, dinovelY), missiles.id, false)
             missiles.id = missiles.id + 1
+            love.audio.stop(launchsound)
+            love.audio.rewind(launchsound)
+            love.audio.play(launchsound)
         elseif key == "left" then
             local tailvelX, tailvelY = dino.tail[5].body:getLinearVelocity()
             missiles[tostring(missiles.id)] = Missile(world, dino.tail[5].body:getX(), dino.tail[5].body:getY(), dino.tail[5].body:getAngle(), vector.new(tailvelX, tailvelY), missiles.id, true)
             missiles.id = missiles.id + 1
+            love.audio.stop(launchsound)
+            love.audio.rewind(launchsound)
+            love.audio.play(launchsound)
+        elseif key == "a" or key == "d" then
+            if jetpacksound:isStopped() then
+                love.audio.play(jetpacksound)
+            end
         end
     elseif gameState == "over" then
         if key == "return" then
@@ -276,6 +306,10 @@ function physadd(shape1data, shape2data, contact)
                 -- create explosion
                 explosions[tostring(explosions.id)] = Explosion(shape1data.pos.x, shape1data.pos.y)
                 explosions.id = explosions.id + 1
+                
+                love.audio.stop(boomsound)
+                love.audio.rewind(boomsound)
+                love.audio.play(boomsound)
             end
         end
     end
@@ -291,6 +325,10 @@ function physadd(shape1data, shape2data, contact)
                 -- create explosion
                 explosions[tostring(explosions.id)] = Explosion(shape2data.pos.x, shape2data.pos.y)
                 explosions.id = explosions.id + 1
+                
+                love.audio.stop(boomsound)
+                love.audio.rewind(boomsound)
+                love.audio.play(boomsound)
             end
         end
     end
