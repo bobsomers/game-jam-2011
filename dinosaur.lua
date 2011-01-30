@@ -20,15 +20,38 @@ function Dinosaur:new (o)
     return o
 end
 
+function Dinosaur.initTail(self, x, y)
+    self.tail = {}
+
+    -- create tail segments
+    for i=1,4 do
+        self.tail[i] = {}
+        self.tail[i].body = phys.newBody(world, x + 50 + (i * 14), y, 0.000001, 0.000001)
+        self.tail[i].shape = phys.newRectangleShape(self.tail[i].body, 0, 0, 20 - 2*i, 20 - 2*i, 0)
+        -- if it is the first joint, allow it to rotate a little more than the others
+        if i == 1 then
+            self.tail[i].joint = love.physics.newRevoluteJoint( self.torso.body, self.tail[i].body, x + 50 + ((i-1) * 14), y )
+            self.tail[i].joint:setMaxMotorTorque(0)
+            self.tail[i].joint:setLimits(-math.pi / 4, math.pi / 4)
+            self.tail[i].joint:setLimitsEnabled(true)
+        else
+        -- otherwise, restrict the rotation of the tail segments
+            self.tail[i].joint = love.physics.newRevoluteJoint( self.tail[i-1].body, self.tail[i].body, x + 50 + ((i-1) * 14), y )
+            self.tail[i].joint:setLimits(-math.pi / 16, math.pi / 16)
+            self.tail[i].joint:setLimitsEnabled(true)
+        end
+    end
+end
+
 function Dinosaur.initTorso(self, x, y)
 
     self.torso.body = phys.newBody(world, x, y, 10, 15)
     self.torso.shape = phys.newRectangleShape(dino.torso.body, 0, 0, 100, 50, 0)
 
-    --self.foot.body = phys.newBody(world, x, y - 25, 5, 7)
-    --self.foot.shape = phys.newRectangleShape(dino.foot.body, 0, 0, 50, 50, 0)
+    self.foot.body = phys.newBody(world, x, y + 25, 2, 3)
+    self.foot.shape = phys.newRectangleShape(dino.foot.body, 0, 0, 50, 50, 0)
 
-    --joint = love.physics.newDistanceJoint( self.torso.body, self.foot.body, x, y, x, y-25 )
+    self:initTail(x, y)
 
 end
 
@@ -101,13 +124,25 @@ function Dinosaur.draw(self)
     gfx.pop()
 
         -- left leg
-        --[[
+        ---[[
         gfx.push()
         gfx.translate(self.foot.body:getX(), self.foot.body:getY())
         gfx.rotate(self.foot.body:getAngle())
         gfx.setColor(0, 255, 0)
         gfx.rectangle("fill", -25, -25, 50, 50)
         gfx.pop()
+
+    for i=4,1,-1 do
+        gfx.push()
+        gfx.translate(self.tail[i].body:getX(), self.tail[i].body:getY())
+        gfx.rotate(self.tail[i].body:getAngle())
+        --gfx.setColor(0, 0, 255)
+        --gfx.rectangle("fill", -5, -5, 20 - 2*i, 20 - 2*i)
+        gfx.setColor(255, 255, 255)
+        gfx.draw(resources["tail0" .. i], 0, 0, 0, 2, 2, 0, 0)
+        gfx.pop()
+    end
+
         --]]
 end
 

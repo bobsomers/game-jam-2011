@@ -1,5 +1,5 @@
 
-dofile "game/helper.lua"
+dofile "./helper.lua"
 
 local gfx = love.graphics
 local phys = love.physics
