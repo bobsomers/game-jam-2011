@@ -53,8 +53,13 @@ Dinosaur = class(function(self, world, x, y)
     self.neck = {
         seg1 = { size = vector.new(15, 15) },
         seg2 = { size = vector.new(15, 15) },
-        base = vector.new(-30, -15),
-        dist = vector.new(-50, -35)
+        base = vector.new(15, 15),
+        dist = vector.new(50, -55)
+    }
+
+    -- create tail
+    self.tail = {
+        offset = vector.new(-45, 05)
     }
 
     offset = vector.new(self.neck.base.x + self.neck.dist.x, self.neck.base.y + self.neck.dist.y)
@@ -114,15 +119,17 @@ Dinosaur = class(function(self, world, x, y)
                                                      x + offset.x, 
                                                      y + offset.y)
 
-    -- create tail
-    self.tail = {
-        offset = vector.new(20, -25)
-    }
 
     for i = 1, 5 do
         self.tail[i] = {}
-        self.tail[i].body = phys.newBody(world, x + self.tail.offset.x + (i * 14), y + self.tail.offset.y, 0.000001, 0.000001)
-        self.tail[i].shape = phys.newRectangleShape(self.tail[i].body, 0, 0, 20 - 2 * i, 20 - 2 * i, 0)
+
+        if i < 5 then
+            self.tail[i].body = phys.newBody(world, x + self.tail.offset.x - (i * 14), y + self.tail.offset.y, 0.000001, 0.000001)
+            self.tail[i].shape = phys.newRectangleShape(self.tail[i].body, 0, 0, 20 - 2 * i, 20 - 2 * i, 0)
+        else
+            self.tail[i].body = phys.newBody(world, x + self.tail.offset.x - (5 * 14) - 50, y + self.tail.offset.y - 10, 0.000001, 0.000001)
+            self.tail[i].shape = phys.newRectangleShape(self.tail[i].body, 0, 0, 30, 15, 0)
+        end
 
         self.tail[i].shape:setCategory(4)
 
@@ -133,19 +140,16 @@ Dinosaur = class(function(self, world, x, y)
 
         -- if it is the first joint, allow it to rotate a little more than the others
         if i == 1 then
-            self.tail[i].joint = love.physics.newRevoluteJoint(self.torso.body, self.tail[i].body, x + self.tail.offset.x + ((i) * 14), y + self.tail.offset.y)
+            self.tail[i].joint = love.physics.newRevoluteJoint(self.torso.body, self.tail[i].body, x + self.tail.offset.x - ((i-1) * 14), y + self.tail.offset.y)
             self.tail[i].joint:setMaxMotorTorque(0)
             self.tail[i].joint:setLimits(-math.pi / 4, math.pi / 4)
             self.tail[i].joint:setLimitsEnabled(true)
-        else
-        -- otherwise, restrict the rotation of the tail segments
-            self.tail[i].joint = love.physics.newRevoluteJoint(self.tail[i - 1].body, self.tail[i].body, x + self.tail.offset.x + ((i - 1) * 14), y + self.tail.offset.y)
-            self.tail[i].joint:setLimits(-math.pi / 16, math.pi / 16)
-            self.tail[i].joint:setLimitsEnabled(true)
-        end
-        if i < 2 then
             self.tail[i].image = gfx.newImage("bront/tail" .. 1 .. ".png")
         else
+        -- otherwise, restrict the rotation of the tail segments
+            self.tail[i].joint = love.physics.newRevoluteJoint(self.tail[i - 1].body, self.tail[i].body, x + self.tail.offset.x - ((i - 1) * 14), y + self.tail.offset.y)
+            self.tail[i].joint:setLimits(-math.pi / 16, math.pi / 16)
+            self.tail[i].joint:setLimitsEnabled(true)
             self.tail[i].image = gfx.newImage("bront/tail" .. i-1 .. ".png")
         end
         self.tail[i].image:setFilter("nearest", "nearest")
@@ -219,13 +223,13 @@ function Dinosaur:draw()
     gfx.setColor(255, 255, 255)
     gfx.draw(self.torso.image, self.torso.body:getX(), self.torso.body:getY(), self.torso.body:getAngle(), 2, 2, self.torso.size.x / 4, self.torso.size.y / 4)
     
-    -- neck seg1
-    gfx.setColor(255, 255, 255)
-    gfx.draw(self.neck.seg1.image, self.neck.seg1.body:getX(), self.neck.seg1.body:getY(), self.neck.seg1.body:getAngle(), 2, 2, self.neck.seg1.size.x / 4, self.neck.seg1.size.y / 4)
-    
     -- neck seg2
     gfx.setColor(255, 255, 255)
     gfx.draw(self.neck.seg2.image, self.neck.seg2.body:getX(), self.neck.seg2.body:getY(), self.neck.seg2.body:getAngle(), 2, 2, self.neck.seg2.size.x / 4, self.neck.seg2.size.y / 4)
+    
+    -- neck seg1
+    gfx.setColor(255, 255, 255)
+    gfx.draw(self.neck.seg1.image, self.neck.seg1.body:getX(), self.neck.seg1.body:getY(), self.neck.seg1.body:getAngle(), 2, 2, self.neck.seg1.size.x / 4, self.neck.seg1.size.y / 4)
 
     -- head
     gfx.setColor(255, 255, 255)
