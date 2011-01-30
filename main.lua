@@ -13,7 +13,7 @@ ARENA_HEIGHT = 1200
 
 function love.load()
     gfx.setBackgroundColor(0, 0, 0)
-    bg = gfx.newImage("img/world.png")
+    bg = gfx.newImage("world/bg.png")
     
     -- create world
     world = phys.newWorld(0, 0, ARENA_WIDTH, ARENA_HEIGHT)

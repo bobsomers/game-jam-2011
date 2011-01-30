@@ -6,14 +6,16 @@ local class = require "hump.class"
 Dinosaur = class(function(self, world, x, y)
     -- create torso
     self.torso = {
-        size = vector.new(100, 50)
+        size = vector.new(100, 56)
     }
     self.torso.body = phys.newBody(world, x, y, 10, 15)
     self.torso.shape = phys.newRectangleShape(self.torso.body, 0, 0, self.torso.size.x, self.torso.size.y, 0)
+    self.torso.image = gfx.newImage("bront/body1.png")
+    self.torso.image:setFilter("nearest", "nearest")
     
     -- create head
     self.head = {
-        size = vector.new(40, 40),
+        size = vector.new(42, 42),
         offset = vector.new(-50, -50)
     }
     self.head.body = phys.newBody(world, x + self.head.offset.x, y + self.head.offset.y, 0.000001, 0.000001)
@@ -22,10 +24,12 @@ Dinosaur = class(function(self, world, x, y)
     self.head.joint:setMaxMotorTorque(0)
     self.head.joint:setLimits(-math.pi / 6, math.pi / 6)
     self.head.joint:setLimitsEnabled(true)
+    self.head.image = gfx.newImage("bront/head_laser_awesome.png")
+    self.head.image:setFilter("nearest", "nearest")
     
     -- create tail
     self.tail = {
-        offset = vector.new(50, 0)
+        offset = vector.new(40, 0)
     }
     for i = 1, 4 do
         self.tail[i] = {}
@@ -43,7 +47,7 @@ Dinosaur = class(function(self, world, x, y)
             self.tail[i].joint:setLimits(-math.pi / 16, math.pi / 16)
             self.tail[i].joint:setLimitsEnabled(true)
         end
-        self.tail[i].image = gfx.newImage("img/tail" .. i .. ".png")
+        self.tail[i].image = gfx.newImage("bront/tail" .. i .. ".png")
         self.tail[i].image:setFilter("nearest", "nearest")
     end
     
@@ -61,7 +65,7 @@ Dinosaur = class(function(self, world, x, y)
     self.thruster.right.dir = vector.new(0, 0)
     
     -- create thruster particle systems
-    self.thruster.image = love.graphics.newImage("img/thruster_particle.png")
+    self.thruster.image = love.graphics.newImage("fx/thruster_particle.png")
     self.thruster.left.psys = love.graphics.newParticleSystem(self.thruster.image, 1000)
     self.thruster.left.psys:setEmissionRate(1000)
     self.thruster.left.psys:setSpeed(500, 600)
@@ -101,22 +105,6 @@ function Dinosaur:draw()
     gfx.setColorMode(oldColorMode)
     gfx.setBlendMode(oldBlendMode)
 
-    -- body
-    gfx.push()
-        gfx.translate(self.torso.body:getX(), self.torso.body:getY())
-        gfx.rotate(self.torso.body:getAngle())
-        gfx.setColor(255, 0, 0)
-        gfx.rectangle("fill", -50, -25, 100, 50)
-    gfx.pop()
-
-    -- head
-    gfx.push()
-        gfx.translate(self.head.body:getX(), self.head.body:getY())
-        gfx.rotate(self.head.body:getAngle())
-        gfx.setColor(255, 0, 0)
-        gfx.rectangle("fill", -20, -20, 40, 40)
-    gfx.pop()
-
     -- tail
     for i = 4, 1, -1 do
         gfx.push()
@@ -126,6 +114,14 @@ function Dinosaur:draw()
             gfx.draw(self.tail[i].image, 0, 0, 0, 2, 2, 0, 0)
         gfx.pop()
     end
+    
+    -- body
+    gfx.setColor(255, 255, 255)
+    gfx.draw(self.torso.image, self.torso.body:getX(), self.torso.body:getY(), self.torso.body:getAngle(), 2, 2, self.torso.size.x / 4, self.torso.size.y / 4)
+
+    -- head
+    gfx.setColor(255, 255, 255)
+    gfx.draw(self.head.image, self.head.body:getX(), self.head.body:getY(), self.head.body:getAngle(), 2, 2, self.head.size.x / 4, self.head.size.y / 4)
 end
 
 
@@ -203,5 +199,5 @@ function Dinosaur:update(dt)
 end
 
 function Dinosaur:right()
-    self.torso.body:applyImpulse(0, -50, self.torso.body:getX() - 50, self.torso.body:getY())
+    self.torso.body:applyImpulse(0, -45, self.torso.body:getX() - 50, self.torso.body:getY())
 end
