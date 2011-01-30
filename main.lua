@@ -13,11 +13,17 @@ ARENA_HEIGHT = 1200
 
 function love.load()
     gfx.setBackgroundColor(0, 0, 0)
-    sky = gfx.newImage("world/sky.png")
     
     -- create world
     world = phys.newWorld(0, 0, ARENA_WIDTH, ARENA_HEIGHT)
     world:setGravity(0, 350)
+    
+    -- terrain
+    sky = gfx.newImage("world/sky.png")
+    grass = gfx.newImage("world/grass.png")
+    grass:setFilter("nearest", "nearest")
+    sand = gfx.newImage("world/sand.png")
+    sand:setFilter("nearest", "nearest")
     
     -- create walls
     walls = {}
@@ -74,10 +80,28 @@ function love.draw()
     -- begin world drawing
     cam:predraw()
 
-    -- draw walls
-    for k,v in pairs(walls) do
-        v:draw()
+    -- draw terrain
+    for i = 1, 6 do
+        gfx.draw(sand, -192 + 5, (i - 1) * 224, 0, 4, 4)
+        gfx.draw(sand, -384 + 5, (i - 1) * 224, 0, 4, 4)
+        gfx.draw(sand, -576 + 5, (i - 1) * 224, 0, 4, 4)
+        gfx.draw(sand, -768 + 5, (i - 1) * 224, 0, 4, 4)
+        
+        gfx.draw(sand, 2400 - 5, (i - 1) * 224, 0, 4, 4)
+        gfx.draw(sand, 2592 - 5, (i - 1) * 224, 0, 4, 4)
+        gfx.draw(sand, 2784 - 5, (i - 1) * 224, 0, 4, 4)
+        gfx.draw(sand, 2976 - 5, (i - 1) * 224, 0, 4, 4)
     end
+    for i = -2, 16 do
+        gfx.draw(grass, (i - 1) * 192, ARENA_HEIGHT - 5, 0, 4, 4)
+        gfx.draw(grass, (i - 1) * 192, ARENA_HEIGHT + 448 - 5, 0, 4, -4)
+    end
+    
+    -- draw walls
+    -- TODO: take this out
+    --for k,v in pairs(walls) do
+    --    v:draw()
+    --end
 
     dino:draw()
 
