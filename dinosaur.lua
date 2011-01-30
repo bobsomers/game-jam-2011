@@ -1,6 +1,15 @@
 
 -- template dinosaur dataset
-Dinosaur = {}
+Dinosaur = {
+
+    default =
+    {
+        head_dim = {x=40, y=40},
+        head_offset = {x=0, y=0},
+        torso_dim = {x=100, y=50}
+    }
+
+}
 
 local gfx = love.graphics
 local phys = love.physics
@@ -8,16 +17,29 @@ local vector = hump.vector
 
 function Dinosaur:new (o)
 
-    o = o or { 
-                head = {},
-                foot = {},
-                torso = {}
-             }
+    o = o or
+    { 
+        head = {},
+        foot = {},
+        torso = {}
+     }
 
     setmetatable(o, self)
     self.__index = self
 
     return o
+end
+
+function Dinosaur.initHead(self, x, y, ox, oy)
+
+    self.head.body = phys.newBody(world, x+ox, y+oy, 0.000001, 0.000001)
+    self.head.shape = phys.newRectangleShape(self.head.body, 0, 0, self.head.size.x, self.head.size.y, 0)
+
+    self.head.joint = love.physics.newRevoluteJoint( self.torso.body, self.head.body, x, y )
+    self.head.joint:setMaxMotorTorque(0)
+    self.head.joint:setLimits(-math.pi / 6, math.pi / 6)
+    self.head.joint:setLimitsEnabled(true)
+
 end
 
 function Dinosaur.initTail(self, x, y)
@@ -26,17 +48,17 @@ function Dinosaur.initTail(self, x, y)
     -- create tail segments
     for i=1,4 do
         self.tail[i] = {}
-        self.tail[i].body = phys.newBody(world, x + 50 + (i * 14), y, 0.000001, 0.000001)
+        self.tail[i].body = phys.newBody(world, x + (i * 14), y, 0.000001, 0.000001)
         self.tail[i].shape = phys.newRectangleShape(self.tail[i].body, 0, 0, 20 - 2*i, 20 - 2*i, 0)
         -- if it is the first joint, allow it to rotate a little more than the others
         if i == 1 then
-            self.tail[i].joint = love.physics.newRevoluteJoint( self.torso.body, self.tail[i].body, x + 50 + ((i-1) * 14), y )
+            self.tail[i].joint = love.physics.newRevoluteJoint( self.torso.body, self.tail[i].body, x + ((i-1) * 14), y )
             self.tail[i].joint:setMaxMotorTorque(0)
             self.tail[i].joint:setLimits(-math.pi / 4, math.pi / 4)
             self.tail[i].joint:setLimitsEnabled(true)
         else
         -- otherwise, restrict the rotation of the tail segments
-            self.tail[i].joint = love.physics.newRevoluteJoint( self.tail[i-1].body, self.tail[i].body, x + 50 + ((i-1) * 14), y )
+            self.tail[i].joint = love.physics.newRevoluteJoint( self.tail[i-1].body, self.tail[i].body, x + ((i-1) * 14), y )
             self.tail[i].joint:setLimits(-math.pi / 16, math.pi / 16)
             self.tail[i].joint:setLimitsEnabled(true)
         end
@@ -46,17 +68,33 @@ end
 function Dinosaur.initTorso(self, x, y)
 
     self.torso.body = phys.newBody(world, x, y, 10, 15)
-    self.torso.shape = phys.newRectangleShape(dino.torso.body, 0, 0, 100, 50, 0)
+    self.torso.shape = phys.newRectangleShape(dino.torso.body, 0, 0, self.torso.size.x, self.torso.size.y, 0)
 
     self.foot.body = phys.newBody(world, x, y + 25, 2, 3)
     self.foot.shape = phys.newRectangleShape(dino.foot.body, 0, 0, 50, 50, 0)
 
-    self:initTail(x, y)
+    self:initTail(x + 50, y)
+    self:initHead(x - 50, y - 50, self.head.offset.x, self.head.offset.y)
 
 end
 
 -- initialize a dinosaur to the given location
-function Dinosaur.initialize(self, x, y)
+function Dinosaur.initialize(self, x, y, dinoType)
+
+
+    self.head =
+    { 
+        size = dinoType.head_dim,
+        offset = dinoType.head_offset
+    }
+
+    self.foot = {}
+
+    self.torso = 
+    {
+        size = dinoType.torso_dim
+    }
+
     self:initTorso (x, y)
     
     -- thruster set up
@@ -120,7 +158,14 @@ function Dinosaur.draw(self)
     gfx.rotate(self.torso.body:getAngle())
     gfx.setColor(255, 0, 0)
     gfx.rectangle("fill", -50, -25, 100, 50)
+    gfx.pop()
 
+    -- head
+    gfx.push()
+    gfx.translate(self.head.body:getX(), self.head.body:getY())
+    gfx.rotate(self.head.body:getAngle())
+    gfx.setColor(255, 0, 0)
+    gfx.rectangle("fill", -20, -20, 40, 40)
     gfx.pop()
 
         -- left leg

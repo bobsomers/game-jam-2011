@@ -66,7 +66,7 @@ function love.load()
     --dino.foot.body = phys.newBody(world, 400, ARENA_HEIGHT - 200, 10, 15)
     --dino.foot.shape = phys.newRectangleShape(dino.foot.body, 0, 0, 50, 50, 0)
 
-    dino:initialize(400, 400)
+    dino:initialize(400, 400, Dinosaur.default)
 
 end
 
