@@ -36,7 +36,7 @@ Missile = class(function(self, world, x, y, angle, dinovel, index)
     self.smoke.psys:setSpeed(400, 500)
 	self.smoke.psys:setSize(0.5, 0.5)
 	self.smoke.psys:setColor(62, 62, 62, 255, 152, 152, 152, 0)
-	self.smoke.psys:setPosition(400, 300)
+	self.smoke.psys:setPosition(x, y)
 	self.smoke.psys:setLifetime(0.1)
 	self.smoke.psys:setParticleLife(0.2)
 	self.smoke.psys:setDirection(math.pi / 2)
@@ -51,6 +51,11 @@ function Missile:update(dt)
     local force = vector.new(math.cos(self.body:getAngle() + math.pi), math.sin(self.body:getAngle() + math.pi))
     force:normalize_inplace()
     self.body:applyForce(self.power * -force.x, self.power * -force.y)
+    
+    -- update shape data with position
+    local data = self.shape:getData()
+    data.pos = vector.new(self.body:getX(), self.body:getY())
+    self.shape:setData(data)
     
     -- update smoke trail
     self.smoke.psys:setPosition(self.body:getX(), self.body:getY())
