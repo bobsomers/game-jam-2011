@@ -6,17 +6,17 @@ local class = require "hump.class"
 Dinosaur = class(function(self, world, x, y)
     -- create torso
     self.torso = {
-        size = vector.new(100, 56)
+        size = vector.new(100, 90)
     }
     self.torso.body = phys.newBody(world, x, y, 10, 15)
     self.torso.shape = phys.newRectangleShape(self.torso.body, 0, 0, self.torso.size.x, self.torso.size.y, 0)
-    self.torso.image = gfx.newImage("bront/body1.png")
+    self.torso.image = gfx.newImage("bront/body_missile.png")
     self.torso.image:setFilter("nearest", "nearest")
     
     -- create head
     self.head = {
         size = vector.new(42, 42),
-        offset = vector.new(-50, -50)
+        offset = vector.new(-50, -25)
     }
     self.head.body = phys.newBody(world, x + self.head.offset.x, y + self.head.offset.y, 0.000001, 0.000001)
     self.head.shape = phys.newRectangleShape(self.head.body, 0, 0, self.head.size.x, self.head.size.y, 0)
@@ -32,7 +32,7 @@ Dinosaur = class(function(self, world, x, y)
     
     -- create tail
     self.tail = {
-        offset = vector.new(40, -30)
+        offset = vector.new(40, -10)
     }
     for i = 1, 4 do
         self.tail[i] = {}
