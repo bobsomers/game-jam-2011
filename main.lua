@@ -4,9 +4,11 @@ local vector = require "hump.vector"
 local camera = require "hump.camera"
 
 dofile "dinosaur.lua"
+dofile "trex.lua"
 dofile "wall.lua"
 dofile "missile.lua"
 dofile "explosion.lua"
+dofile "platform.lua"
 
 SCREEN_WIDTH = 800
 SCREEN_HEIGHT = 600
@@ -36,7 +38,7 @@ function love.load()
     walls[#walls + 1] = Wall(world, ARENA_WIDTH / 2, ARENA_HEIGHT - 2, ARENA_WIDTH, 5)
     
     -- create player
-    dino = Dinosaur(world, 2100, ARENA_HEIGHT - 200)
+    dino = Dinosaur(world, 200, ARENA_HEIGHT - 120)
     
     -- create camera
     cam = camera.new(vector.new(2100, ARENA_HEIGHT - 200))
@@ -64,6 +66,22 @@ function love.load()
     explosions = {
         id = 1
     }
+
+    platforms = {}
+    platforms[1] = Platform(world, 256, ARENA_HEIGHT - 500, 512, 128)
+
+    platforms[2] = Platform(world, ARENA_WIDTH - 256, ARENA_HEIGHT - 500, 512, 128)
+
+    platforms[3] = Platform(world, ARENA_WIDTH / 2, ARENA_HEIGHT - 750, 512, 128)
+
+    -- create enemies
+    enemies = {}
+    enemies[1] = Trex(world, ARENA_WIDTH / 2, ARENA_HEIGHT - 120, ARENA_WIDTH / 2 - 256, ARENA_WIDTH / 2 + 256)
+    enemies[2] = Trex(world, ARENA_WIDTH / 2, ARENA_HEIGHT - (120 + 750 + 64), ARENA_WIDTH / 2 - (256 - 128), ARENA_WIDTH / 2 + (256 - 128))
+
+    enemies[3] = Trex(world, 256, ARENA_HEIGHT - 564 - 120, 128, 512 - 128)
+    enemies[4] = Trex(world, ARENA_WIDTH - 256, ARENA_HEIGHT - 564 - 120, ARENA_WIDTH - (512 - 128), ARENA_WIDTH -128)
+
 end
 
 function love.update(dt)    
@@ -85,7 +103,6 @@ function love.update(dt)
     local dy = cam.posV.y * dt
     cam.pos = vector.new(cam.pos.x + dx, cam.pos.y + dy)
     cam.zoom = cam.zoom + dz
-    
     -- update missiles
     for k, v in pairs(missiles) do
         if k ~= "id" then
@@ -95,6 +112,13 @@ function love.update(dt)
     
     -- update lasers
     for k, v in pairs(lasers) do
+        if k ~= "id" then
+            v:update(dt)
+        end
+    end
+    
+    -- update lasers
+    for k, v in pairs(enemies) do
         if k ~= "id" then
             v:update(dt)
         end
@@ -146,6 +170,18 @@ function love.draw()
     --end
 
     dino:draw()
+
+    for k, v in pairs(platforms) do
+        if k ~= "id" then
+            v:draw()
+        end
+    end
+
+    for k, v in pairs(enemies) do
+        if k ~= "id" then
+            v:draw()
+        end
+    end
 
     -- draw missiles
     for k, v in pairs(missiles) do
