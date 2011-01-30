@@ -6,7 +6,6 @@ local camera = require "hump.camera"
 dofile "dinosaur.lua"
 dofile "wall.lua"
 dofile "missile.lua"
-dofile "laser.lua"
 dofile "explosion.lua"
 
 SCREEN_WIDTH = 800
