@@ -13,6 +13,8 @@ SCREEN_HEIGHT = 600
 ARENA_WIDTH = 2400
 ARENA_HEIGHT = 1200
 
+PLAY_TIME = 60
+
 function love.load()
     gfx.setBackgroundColor(0, 0, 0)
     
@@ -36,10 +38,10 @@ function love.load()
     walls[#walls + 1] = Wall(world, ARENA_WIDTH / 2, ARENA_HEIGHT - 2, ARENA_WIDTH, 5)
     
     -- create player
-    dino = Dinosaur(world, 2100, ARENA_HEIGHT - 200)
+    dino = Dinosaur(world, 1200, ARENA_HEIGHT - 200)
     
     -- create camera
-    cam = camera.new(vector.new(2100, ARENA_HEIGHT - 200))
+    cam = camera.new(vector.new(1200, ARENA_HEIGHT - 200))
     cam.springK = 0.2
     cam.friction = 0.95
     cam.zoomV = 0
@@ -64,6 +66,16 @@ function love.load()
     explosions = {
         id = 1
     }
+    
+    -- game state and scoring
+    gameStartTime = love.timer.getTime()
+    gameState = "playing"
+    gameScore = 0
+    
+    -- ui schtuff
+    timerFont = gfx.newFont("fonts/prehistoric.ttf", 48)
+    overFont = gfx.newFont("fonts/prehistoric.ttf", 72)
+    infoFont = gfx.newFont("fonts/prehistoric.ttf", 24)
 end
 
 function love.update(dt)    
@@ -112,6 +124,12 @@ function love.update(dt)
     
     -- update physics world
     world:update(dt)
+    
+    -- time up?
+    elapsed = love.timer.getTime() - gameStartTime
+    if elapsed > PLAY_TIME then
+        gameState = "over"
+    end
 end
 
 function love.draw()    
@@ -180,19 +198,69 @@ function love.draw()
     
     -- end world drawing
     cam:postdraw()
+    
+    -- draw ui
+    gfx.setFont(infoFont)
+    gfx.setColor(0, 0, 0)
+    gfx.print("Time Remaining", 22, 7)
+    gfx.setColor(255, 255, 255)
+    gfx.print("Time Remaining", 20, 5)
+    gfx.setColor(0, 0, 0)
+    gfx.print("Kill Count", 22, 502)
+    gfx.setColor(255, 255, 255)
+    gfx.print("Kill Count", 20, 500)
+    
+    -- game timer and score
+    elapsed = love.timer.getTime() - gameStartTime
+    if elapsed > PLAY_TIME then
+        remaining = 0
+    else
+        remaining = PLAY_TIME - elapsed
+    end
+    gfx.setFont(timerFont)
+    gfx.setColor(0, 0, 0)
+    gfx.print(string.format("%.2f", remaining), 22, 25)
+    gfx.setColor(255, 255, 255)
+    gfx.print(string.format("%.2f", remaining), 20, 23)
+    gfx.setColor(0, 0, 0)
+    gfx.print(gameScore, 22, 520)
+    gfx.setColor(255, 255, 255)
+    gfx.print(gameScore, 20, 518)
+    
+    -- game over text
+    if gameState == "over" then
+        gfx.setFont(overFont)
+        gfx.setColor(0, 0, 0)
+        gfx.print("GAME OVER", 202, 202)
+        gfx.setColor(255, 255, 255)
+        gfx.print("GAME OVER", 200, 200)
+    end
 end
 
 function love.keypressed(key, unicode)
-    if key == " " then
-        dino:right()
-    elseif key == "right" then
-        local dinovelX, dinovelY = dino.torso.body:getLinearVelocity()
-        missiles[tostring(missiles.id)] = Missile(world, dino.torso.body:getX(), dino.torso.body:getY(), dino.torso.body:getAngle(), vector.new(dinovelX, dinovelY), missiles.id, false)
-        missiles.id = missiles.id + 1
-    elseif key == "left" then
-        local tailvelX, tailvelY = dino.tail[5].body:getLinearVelocity()
-        missiles[tostring(missiles.id)] = Missile(world, dino.tail[5].body:getX(), dino.tail[5].body:getY(), dino.tail[5].body:getAngle(), vector.new(tailvelX, tailvelY), missiles.id, true)
-        missiles.id = missiles.id + 1
+    if gameState == "playing" then
+        if key == " " then
+            dino:right()
+        elseif key == "right" then
+            local dinovelX, dinovelY = dino.torso.body:getLinearVelocity()
+            missiles[tostring(missiles.id)] = Missile(world, dino.torso.body:getX(), dino.torso.body:getY(), dino.torso.body:getAngle(), vector.new(dinovelX, dinovelY), missiles.id, false)
+            missiles.id = missiles.id + 1
+        elseif key == "left" then
+            local tailvelX, tailvelY = dino.tail[5].body:getLinearVelocity()
+            missiles[tostring(missiles.id)] = Missile(world, dino.tail[5].body:getX(), dino.tail[5].body:getY(), dino.tail[5].body:getAngle(), vector.new(tailvelX, tailvelY), missiles.id, true)
+            missiles.id = missiles.id + 1
+        end
+    elseif gameState == "over" then
+        if key == "return" then
+            dino.torso.body:setPosition(1200, ARENA_HEIGHT - 200)
+            dino.torso.body:setAngle(0)
+            dino.torso.body:setLinearVelocity(0, 0)
+            dino.torso.body:setAngularVelocity(0, 0)
+            
+            cam.pos = vector.new(1200, ARENA_HEIGHT - 200)
+            
+            -- delete t-rexes?
+        end
     end
 end
 

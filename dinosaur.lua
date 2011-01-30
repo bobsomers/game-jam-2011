@@ -351,7 +351,7 @@ function Dinosaur:update(dt)
                                          self.torso.body:getY() + self.thruster.DISTANCE * math.sin(dinoAngle))
                         
     -- thrusters!
-    if kb.isDown("a") then
+    if kb.isDown("a") and gameState == "playing" then
         -- apply thrust on the right
         self.thruster.right.dir = vector.new(-self.thruster.USER_POWER * math.cos(dinoAngle - (math.pi / 10) + (math.pi / 2)),
                                              -self.thruster.USER_POWER * math.sin(dinoAngle - (math.pi / 10) + (math.pi / 2)))
@@ -367,7 +367,7 @@ function Dinosaur:update(dt)
     self.torso.body:applyForce(self.thruster.right.dir.x, self.thruster.right.dir.y, self.thruster.right.pos.x, self.thruster.right.pos.y)
     self.thruster.right.psys:setPosition(self.thruster.right.pos.x, self.thruster.right.pos.y)
     
-    if kb.isDown("d") then
+    if kb.isDown("d") and gameState == "playing" then
         -- apply thrust on the left
         self.thruster.left.dir = vector.new(-self.thruster.USER_POWER * math.cos(dinoAngle + (math.pi / 10) + (math.pi / 2)),
                                             -self.thruster.USER_POWER * math.sin(dinoAngle + (math.pi / 10) + (math.pi / 2)))
