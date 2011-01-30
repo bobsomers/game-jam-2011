@@ -53,8 +53,8 @@ Dinosaur = class(function(self, world, x, y)
     self.neck = {
         seg1 = { size = vector.new(15, 15) },
         seg2 = { size = vector.new(15, 15) },
-        base = vector.new(-30, -15),
-        dist = vector.new(-50, -35)
+        base = vector.new(30, -15),
+        dist = vector.new(50, -35)
     }
 
     offset = vector.new(self.neck.base.x + self.neck.dist.x, self.neck.base.y + self.neck.dist.y)
@@ -116,12 +116,12 @@ Dinosaur = class(function(self, world, x, y)
 
     -- create tail
     self.tail = {
-        offset = vector.new(20, -25)
+        offset = vector.new(-20, -25)
     }
 
     for i = 1, 5 do
         self.tail[i] = {}
-        self.tail[i].body = phys.newBody(world, x + self.tail.offset.x + (i * 14), y + self.tail.offset.y, 0.000001, 0.000001)
+        self.tail[i].body = phys.newBody(world, x + self.tail.offset.x - (i * 14), y + self.tail.offset.y, 0.000001, 0.000001)
         self.tail[i].shape = phys.newRectangleShape(self.tail[i].body, 0, 0, 20 - 2 * i, 20 - 2 * i, 0)
 
         self.tail[i].shape:setCategory(4)
@@ -133,13 +133,13 @@ Dinosaur = class(function(self, world, x, y)
 
         -- if it is the first joint, allow it to rotate a little more than the others
         if i == 1 then
-            self.tail[i].joint = love.physics.newRevoluteJoint(self.torso.body, self.tail[i].body, x + self.tail.offset.x + ((i) * 14), y + self.tail.offset.y)
+            self.tail[i].joint = love.physics.newRevoluteJoint(self.torso.body, self.tail[i].body, x + self.tail.offset.x - ((i) * 14), y + self.tail.offset.y)
             self.tail[i].joint:setMaxMotorTorque(0)
             self.tail[i].joint:setLimits(-math.pi / 4, math.pi / 4)
             self.tail[i].joint:setLimitsEnabled(true)
         else
         -- otherwise, restrict the rotation of the tail segments
-            self.tail[i].joint = love.physics.newRevoluteJoint(self.tail[i - 1].body, self.tail[i].body, x + self.tail.offset.x + ((i - 1) * 14), y + self.tail.offset.y)
+            self.tail[i].joint = love.physics.newRevoluteJoint(self.tail[i - 1].body, self.tail[i].body, x + self.tail.offset.x - ((i - 1) * 14), y + self.tail.offset.y)
             self.tail[i].joint:setLimits(-math.pi / 16, math.pi / 16)
             self.tail[i].joint:setLimitsEnabled(true)
         end
