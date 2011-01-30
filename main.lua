@@ -31,6 +31,14 @@ function love.load()
     
     -- create camera
     cam = camera.new(vector.new(400, 300))
+    cam.springK = 0.1
+    cam.friction = 0.95
+    cam.vel = 0
+    cam.spring = function(dt, current, target)
+        local a = (target - current) * cam.springK
+        cam.vel = (cam.vel + a) * cam.friction
+        return cam.vel * dt
+    end
 end
 
 function love.update(dt)    
@@ -38,7 +46,22 @@ function love.update(dt)
     dino:update(dt)
     
     -- update camera
+    local velX, velY = dino.torso.body:getLinearVelocity()
+    local playerVel = vector.new(velX, velY)
+    local zoom = playerVel:len() / 1200
+    if zoom > 1 then zoom = 1 end
+    zoom = ((1 - zoom) / 2) + 0.5
+    --pos = vector.new(dino.torso.body:getX(), dino.torso.body:getY() - 100)
+    
+    print("current = <" .. cam.pos.x .. ", " .. cam.pos.y .. ">")
+    print("target = <" .. cam.pos.x .. ", " .. cam.pos.y .. ">")
+    
+    --local dx = cam.spring(dt, cam.pos.x, pos.x)
+    --local dy = cam.spring(dt, cam.pos.y, pos.y)
+    local dz = cam.spring(dt, cam.zoom, zoom)
+    --cam.pos = vector.new(cam.pos.x + dx, cam.pos.y + dy)
     cam.pos = vector.new(dino.torso.body:getX(), dino.torso.body:getY() - 100)
+    cam.zoom = cam.zoom + dz
     
     -- update physics world
     world:update(dt)

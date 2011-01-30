@@ -32,7 +32,7 @@ Dinosaur = class(function(self, world, x, y)
     
     -- create tail
     self.tail = {
-        offset = vector.new(40, 0)
+        offset = vector.new(40, -30)
     }
     for i = 1, 4 do
         self.tail[i] = {}
