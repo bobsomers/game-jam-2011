@@ -26,11 +26,11 @@ end
 Dinosaur = class(function(self, world, x, y)
     -- create torso
     self.torso = {
-        size = vector.new(100, 56)
+        size = vector.new(100, 90)
     }
     self.torso.body = phys.newBody(world, x, y, 10, 15)
     self.torso.shape = phys.newRectangleShape(self.torso.body, 0, 0, self.torso.size.x, self.torso.size.y, 0)
-    self.torso.image = gfx.newImage("bront/body1.png")
+    self.torso.image = gfx.newImage("bront/body_missile.png")
     self.torso.image:setFilter("nearest", "nearest")
     self.torso.shape:setCategory(1)
     
