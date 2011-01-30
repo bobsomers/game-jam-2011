@@ -6,6 +6,7 @@ local camera = require "hump.camera"
 dofile "dinosaur.lua"
 dofile "wall.lua"
 dofile "missile.lua"
+dofile "laser.lua"
 dofile "explosion.lua"
 
 SCREEN_WIDTH = 800
@@ -55,6 +56,11 @@ function love.load()
         id = 1
     }
     
+    -- create lasers
+    lasers = {
+        id = 1
+    }
+    
     -- create explosions
     explosions = {
         id = 1
@@ -83,6 +89,13 @@ function love.update(dt)
     
     -- update missiles
     for k, v in pairs(missiles) do
+        if k ~= "id" then
+            v:update(dt)
+        end
+    end
+    
+    -- update lasers
+    for k, v in pairs(lasers) do
         if k ~= "id" then
             v:update(dt)
         end
@@ -142,6 +155,13 @@ function love.draw()
         end
     end
     
+    -- draw lasers
+    for k, v in pairs(lasers) do
+        if k ~= "id" then
+            v:draw()
+        end
+    end
+    
     -- draw explosions
     for k, v in pairs(explosions) do
         if k ~= "id" then
@@ -168,7 +188,11 @@ function love.keypressed(key, unicode)
         dino:right()
     elseif key == "right" then
         local dinovelX, dinovelY = dino.torso.body:getLinearVelocity()
-        missiles[tostring(missiles.id)] = Missile(world, dino.torso.body:getX(), dino.torso.body:getY(), dino.torso.body:getAngle(), vector.new(dinovelX, dinovelY), missiles.id)
+        missiles[tostring(missiles.id)] = Missile(world, dino.torso.body:getX(), dino.torso.body:getY(), dino.torso.body:getAngle(), vector.new(dinovelX, dinovelY), missiles.id, false)
+        missiles.id = missiles.id + 1
+    elseif key == "left" then
+        local tailvelX, tailvelY = dino.tail[5].body:getLinearVelocity()
+        missiles[tostring(missiles.id)] = Missile(world, dino.tail[5].body:getX(), dino.tail[5].body:getY(), dino.tail[5].body:getAngle(), vector.new(tailvelX, tailvelY), missiles.id, true)
         missiles.id = missiles.id + 1
     end
 end
