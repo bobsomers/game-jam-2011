@@ -3,16 +3,24 @@ local phys = love.physics
 local vector = require "hump.vector"
 local class = require "hump.class"
 
-Missile = class(function(self, world, x, y, angle, dinovel, index)
+Missile = class(function(self, world, x, y, angle, vel, index, left)
     local offset = vector.new(15, -35)
     offset = offset:rotated(angle)
 
+    if left then
+        offset = vector.new(0, 0)
+    end
+    
     self.body = phys.newBody(world, x + offset.x, y + offset.y, 5, 10)
     self.shape = phys.newRectangleShape(self.body, 0, 0, 32, 20, 0)
     self.image = gfx.newImage("fx/missile.png")
     self.image:setFilter("nearest", "nearest")
-    self.body:setAngle(angle)
-    self.body:setLinearVelocity(dinovel.x, dinovel.y)
+    if not left then
+        self.body:setAngle(angle)
+    else
+        self.body:setAngle(angle + math.pi)
+    end
+    self.body:setLinearVelocity(vel.x, vel.y)
     self.shape:setCategory(5)
     self.shape:setMask(1, 2, 3, 4)
     self.shape:setData({
@@ -23,10 +31,11 @@ Missile = class(function(self, world, x, y, angle, dinovel, index)
     self.shove = 40
     
     -- give it an initial shove vertically away from the dino
-    local shovedir = vector.new(math.cos(angle - math.pi / 2), math.sin(angle - math.pi / 2))
-    shovedir:normalize_inplace()
-    self.body:applyImpulse(self.shove * shovedir.x, self.shove * shovedir.y)
-    --self.body:applyForce(self.power * -force.x, self.power * -force.y)
+    if not left then
+        local shovedir = vector.new(math.cos(self.body:getAngle() - math.pi / 2), math.sin(self.body:getAngle() - math.pi / 2))
+        shovedir:normalize_inplace()
+        self.body:applyImpulse(self.shove * shovedir.x, self.shove * shovedir.y)
+    end
     
     -- smoke trail particle system
     self.smoke = {}
