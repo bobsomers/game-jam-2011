@@ -50,10 +50,12 @@ function love.load()
     end
     
     -- create missiles
-    missiles = {}
+    missiles = {
+        id = 1
+    }
     
     -- physics system removals
-    physremovals = {}
+    --physremovals = {}
 end
 
 function love.update(dt)    
@@ -77,17 +79,21 @@ function love.update(dt)
     cam.zoom = cam.zoom + dz
     
     -- update missiles
-    for i, v in ipairs(missiles) do
-        v:update(dt)
+    for k, v in pairs(missiles) do
+        if k ~= "id" then
+            v:update(dt)
+        end
     end
     
     -- update physics world
     world:update(dt)
     
     -- process physics system removals
+    --[[
     for _, info in ipairs(physremovals) do
         table.remove(info.tab, info.index)
     end
+    --]]
 end
 
 function love.draw()    
@@ -124,8 +130,10 @@ function love.draw()
     dino:draw()
 
     -- draw missiles
-    for i, v in ipairs(missiles) do
-        v:draw()
+    for k, v in pairs(missiles) do
+        if k ~= "id" then
+            v:draw()
+        end
     end
     
     --[[
@@ -146,25 +154,22 @@ function love.keypressed(key, unicode)
     if key == " " then
         dino:right()
     elseif key == "right" then
-        missileID = #missiles + 1
-        missiles[missileID] = Missile(world, dino.torso.body:getX(), dino.torso.body:getY(), dino.torso.body:getAngle(), missileID)
+        local dinovelX, dinovelY = dino.torso.body:getLinearVelocity()
+        missiles[tostring(missiles.id)] = Missile(world, dino.torso.body:getX(), dino.torso.body:getY(), dino.torso.body:getAngle(), vector.new(dinovelX, dinovelY), missiles.id)
+        missiles.id = missiles.id + 1
     end
 end
 
 function physadd(shape1data, shape2data, contact)
     if shape1data ~= nil then
         if shape1data.kind == "missile" then
-            missiles[shape1data.i].shape:setMask(1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16)
-            table.insert(physremovals, {tab = missiles, index = shape1data.i})
-            table.remove(missiles, shape1data.i)
+            missiles[tostring(shape1data.i)] = nil
         end
     end
     
     if shape2data ~= nil then
         if shape2data.kind == "missile" then
-            missiles[shape2data.i].shape:setMask(1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16)
-            table.insert(physremovals, {tab = missiles, index = shape2data.i})
-            table.remove(missiles, shape2data.i)
+            missiles[tostring(shape2data.i)] = nil
         end
     end
 end

@@ -3,7 +3,7 @@ local phys = love.physics
 local vector = require "hump.vector"
 local class = require "hump.class"
 
-Missile = class(function(self, world, x, y, angle, index)
+Missile = class(function(self, world, x, y, angle, dinovel, index)
     local offset = vector.new(15, -35)
     offset = offset:rotated(angle)
 
@@ -11,8 +11,8 @@ Missile = class(function(self, world, x, y, angle, index)
     self.shape = phys.newRectangleShape(self.body, 0, 0, 32, 20, 0)
     self.image = gfx.newImage("fx/missile.png")
     self.image:setFilter("nearest", "nearest")
-    self.body:setLinearVelocity(100, 0)
     self.body:setAngle(angle)
+    self.body:setLinearVelocity(dinovel.x, dinovel.y)
     self.shape:setCategory(5)
     self.shape:setMask(1, 2, 3, 4)
     self.shape:setData({
@@ -20,6 +20,13 @@ Missile = class(function(self, world, x, y, angle, index)
         i = index
     })
     self.power = 300
+    self.shove = 40
+    
+    -- give it an initial shove vertically away from the dino
+    local shovedir = vector.new(math.cos(angle - math.pi / 2), math.sin(angle - math.pi / 2))
+    shovedir:normalize_inplace()
+    self.body:applyImpulse(self.shove * shovedir.x, self.shove * shovedir.y)
+    --self.body:applyForce(self.power * -force.x, self.power * -force.y)
     
     -- smoke trail particle system
     self.smoke = {}
