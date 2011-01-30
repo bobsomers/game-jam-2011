@@ -24,7 +24,7 @@ function love.load()
     grass:setFilter("nearest", "nearest")
     sand = gfx.newImage("world/sand.png")
     sand:setFilter("nearest", "nearest")
-    
+
     -- create walls
     walls = {}
     walls[#walls + 1] = Wall(world, 2, ARENA_HEIGHT / 2, 5, ARENA_HEIGHT)
