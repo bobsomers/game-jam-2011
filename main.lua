@@ -1,92 +1,62 @@
-require "hump.vector"
+local gfx = love.graphics
+local phys = love.physics
+local vector = require "hump.vector"
+local camera = require "hump.camera"
 
-dofile "./dinosaur.lua"
-dofile "./obstacle.lua"
-
-local vector = hump.vector
+dofile "dinosaur.lua"
+dofile "wall.lua"
 
 SCREEN_WIDTH = 800
 SCREEN_HEIGHT = 600
-ARENA_WIDTH = 800
-ARENA_HEIGHT = 600
-
-world = nil
-
-walls = {
-}
-
-dino = Dinosaur:new()
-
-
-test = love.graphics.newImage("head01.png")
-
-resources = {}
-
-resources["tail01"] = love.graphics.newImage("img/tail01.png")
-resources["tail01"]:setFilter("nearest", "nearest")
-
-resources["tail02"] = love.graphics.newImage("img/tail02.png")
-resources["tail02"]:setFilter("nearest", "nearest")
-
-resources["tail03"] = love.graphics.newImage("img/tail03.png")
-resources["tail03"]:setFilter("nearest", "nearest")
-
-resources["tail04"] = love.graphics.newImage("img/tail04.png")
-resources["tail04"]:setFilter("nearest", "nearest")
-
-test:setFilter("nearest", "nearest")
+ARENA_WIDTH = 2400
+ARENA_HEIGHT = 1200
 
 function love.load()
-    
-    local gfx = love.graphics
-    local phys = love.physics
-
     gfx.setBackgroundColor(0, 0, 0)
+    bg = gfx.newImage("img/world.png")
     
-    world = phys.newWorld(0, 0, 800, 600)
+    -- create world
+    world = phys.newWorld(0, 0, ARENA_WIDTH, ARENA_HEIGHT)
     world:setGravity(0, 350)
+
+    -- create walls
+    walls = {}
+    walls[#walls + 1] = Wall(world, 2, ARENA_HEIGHT / 2, 5, ARENA_HEIGHT)
+    walls[#walls + 1] = Wall(world, ARENA_WIDTH - 2, ARENA_HEIGHT / 2, 5, ARENA_HEIGHT)
+    walls[#walls + 1] = Wall(world, ARENA_WIDTH / 2, 2, ARENA_WIDTH, 5)
+    walls[#walls + 1] = Wall(world, ARENA_WIDTH / 2, ARENA_HEIGHT - 2, ARENA_WIDTH, 5)
     
-    left = Obstacle:new()
-    left:initialize(2, ARENA_HEIGHT / 2, 5, ARENA_HEIGHT)
-    walls[#walls+1] = left
-
-    right = Obstacle:new()
-    right:initialize(ARENA_WIDTH - 2, ARENA_HEIGHT / 2, 5, ARENA_HEIGHT)
-    walls[#walls+1] = right
-
-    top = Obstacle:new()
-    top:initialize(ARENA_WIDTH / 2, 2, ARENA_WIDTH, 5)
-    walls[#walls+1] = top
-
-    bottom = Obstacle:new()
-    bottom:initialize(ARENA_WIDTH / 2, ARENA_HEIGHT - 2, ARENA_WIDTH, 5)
-    walls[#walls+1] = bottom
-
-
-    --dino.foot.body = phys.newBody(world, 400, ARENA_HEIGHT - 200, 10, 15)
-    --dino.foot.shape = phys.newRectangleShape(dino.foot.body, 0, 0, 50, 50, 0)
-
-    dino:initialize(400, 400, Dinosaur.default)
-
+    -- create player
+    dino = Dinosaur(world, 400, 300)
+    
+    -- create camera
+    cam = camera.new(vector.new(400, 300))
 end
 
 function love.update(dt)    
+    -- update player
     dino:update(dt)
+    
+    -- update camera
+    cam.pos = vector.new(dino.torso.body:getX(), dino.torso.body:getY() - 100)
+    
+    -- update physics world
     world:update(dt)
-
 end
 
-function love.draw()
-    local gfx = love.graphics
+function love.draw()    
+    -- begin world drawing
+    cam:predraw()
     
-    -- draw walls
-    gfx.setColor(0, 0, 0)
+    -- draw background
+    gfx.draw(bg, 0, 0)
 
-    for k,v in pairs(walls) do v:draw() end
+    -- draw walls
+    for k,v in pairs(walls) do
+        v:draw()
+    end
 
     dino:draw()
-
-    gfx.pop()
 
     --[[
     -- thruster debug drawing
@@ -98,8 +68,8 @@ function love.draw()
     gfx.line(dino.thruster.right.pos.x, dino.thruster.right.pos.y, dino.thruster.right.pos.x - dino.thruster.right.dir.x, dino.thruster.right.pos.y - dino.thruster.right.dir.y)
     --]]
     
-    gfx.setColor(255, 255, 255)
-    gfx.draw(test, 50, 50, 0, 5, 5)
+    -- end world drawing
+    cam:postdraw()
 end
 
 function love.keypressed(key, unicode)

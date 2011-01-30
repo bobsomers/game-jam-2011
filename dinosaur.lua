@@ -1,103 +1,84 @@
-
--- template dinosaur dataset
-Dinosaur = {
-
-    default =
-    {
-        head_dim = {x=40, y=40},
-        head_offset = {x=0, y=0},
-        torso_dim = {x=100, y=50}
-    }
-
-}
-
 local gfx = love.graphics
 local phys = love.physics
-local vector = hump.vector
+local vector = require "hump.vector"
+local class = require "hump.class"
 
-function Dinosaur:new (o)
+Foot = class(function(self, world, x, y, footsize, stepsize)
+    self.footsize, self.stepsize = footsize, stepsize
+    
+    self.right = {
+    
+    }
+end)
 
-    o = o or
-    { 
-        head = {},
-        foot = {},
-        torso = {}
-     }
+function Foot.draw()
 
-    setmetatable(o, self)
-    self.__index = self
+    -- left
+    gfx.push()
+        gfx.translate(self.body:getX(), self.body:getY())
+        gfx.rotate(self.torso.body:getAngle())
+        gfx.setColor(255, 255, 0)
+        gfx.rectangle("fill", -self.stepsize / 2, -self.stepsize / 2, self.stepsize, self.stepsize)
+    gfx.pop()
 
-    return o
 end
 
-function Dinosaur.initHead(self, x, y, ox, oy)
+Dinosaur = class(function(self, world, x, y)
+    -- create torso
+    self.torso = {
+        size = vector.new(100, 50)
+    }
+    self.torso.body = phys.newBody(world, x, y, 10, 15)
+    self.torso.shape = phys.newRectangleShape(self.torso.body, 0, 0, self.torso.size.x, self.torso.size.y, 0)
+    
+    -- create feet
+    self.feet = {}
 
-    self.head.body = phys.newBody(world, x+ox, y+oy, 0.000001, 0.000001)
+
+    -- create right front foot
+    self.feet.front = Foot(world, x, y, 20, 40)
+
+    -- create right front foot
+    self.feet.back = Foot(world, x, y, 20, 40)
+
+
+    -- create head
+    self.head = {
+        size = vector.new(40, 40),
+        offset = vector.new(-50, -50)
+    }
+    self.head.body = phys.newBody(world, x + self.head.offset.x, y + self.head.offset.y, 0.000001, 0.000001)
     self.head.shape = phys.newRectangleShape(self.head.body, 0, 0, self.head.size.x, self.head.size.y, 0)
-
-    self.head.joint = love.physics.newRevoluteJoint( self.torso.body, self.head.body, x, y )
+    self.head.joint = love.physics.newRevoluteJoint(self.torso.body, self.head.body, x + self.head.offset.x, y + self.head.offset.y)
     self.head.joint:setMaxMotorTorque(0)
     self.head.joint:setLimits(-math.pi / 6, math.pi / 6)
     self.head.joint:setLimitsEnabled(true)
-
-end
-
-function Dinosaur.initTail(self, x, y)
-    self.tail = {}
-
-    -- create tail segments
-    for i=1,4 do
+    
+    -- create tail
+    self.tail = {
+        offset = vector.new(50, 0)
+    }
+    for i = 1, 4 do
         self.tail[i] = {}
-        self.tail[i].body = phys.newBody(world, x + (i * 14), y, 0.000001, 0.000001)
-        self.tail[i].shape = phys.newRectangleShape(self.tail[i].body, 0, 0, 20 - 2*i, 20 - 2*i, 0)
+        self.tail[i].body = phys.newBody(world, x + self.tail.offset.x + (i * 14), y + self.tail.offset.y, 0.000001, 0.000001)
+        self.tail[i].shape = phys.newRectangleShape(self.tail[i].body, 0, 0, 20 - 2 * i, 20 - 2 * i, 0)
         -- if it is the first joint, allow it to rotate a little more than the others
         if i == 1 then
-            self.tail[i].joint = love.physics.newRevoluteJoint( self.torso.body, self.tail[i].body, x + ((i-1) * 14), y )
+            self.tail[i].joint = love.physics.newRevoluteJoint(self.torso.body, self.tail[i].body, x + self.tail.offset.x + ((i - 1) * 14), y + self.tail.offset.y)
             self.tail[i].joint:setMaxMotorTorque(0)
             self.tail[i].joint:setLimits(-math.pi / 4, math.pi / 4)
             self.tail[i].joint:setLimitsEnabled(true)
         else
         -- otherwise, restrict the rotation of the tail segments
-            self.tail[i].joint = love.physics.newRevoluteJoint( self.tail[i-1].body, self.tail[i].body, x + ((i-1) * 14), y )
+            self.tail[i].joint = love.physics.newRevoluteJoint(self.tail[i - 1].body, self.tail[i].body, x + self.tail.offset.x + ((i - 1) * 14), y + self.tail.offset.y)
             self.tail[i].joint:setLimits(-math.pi / 16, math.pi / 16)
             self.tail[i].joint:setLimitsEnabled(true)
         end
+        self.tail[i].image = gfx.newImage("img/tail" .. i .. ".png")
+        self.tail[i].image:setFilter("nearest", "nearest")
     end
-end
-
-function Dinosaur.initTorso(self, x, y)
-
-    self.torso.body = phys.newBody(world, x, y, 10, 15)
-    self.torso.shape = phys.newRectangleShape(dino.torso.body, 0, 0, self.torso.size.x, self.torso.size.y, 0)
-
-    self.foot.body = phys.newBody(world, x, y + 25, 2, 3)
-    self.foot.shape = phys.newRectangleShape(dino.foot.body, 0, 0, 50, 50, 0)
-
-    self:initTail(x + 50, y)
-    self:initHead(x - 50, y - 50, self.head.offset.x, self.head.offset.y)
-
-end
-
--- initialize a dinosaur to the given location
-function Dinosaur.initialize(self, x, y, dinoType)
-
-
-    self.head =
-    { 
-        size = dinoType.head_dim,
-        offset = dinoType.head_offset
-    }
-
-    self.foot = {}
-
-    self.torso = 
-    {
-        size = dinoType.torso_dim
-    }
-
-    self:initTorso (x, y)
     
-    -- thruster set up
+    -- create thrusters
     self.thruster = {
         DISTANCE = 25,
         USER_POWER = 150,
@@ -110,8 +91,8 @@ function Dinosaur.initialize(self, x, y, dinoType)
     self.thruster.right.pos = vector.new(self.torso.body:getX() + self.thruster.DISTANCE, self.torso.body:getY())
     self.thruster.right.dir = vector.new(0, 0)
     
-    -- thruster particle systems
-    self.thruster.image = love.graphics.newImage("thruster_particle.png")
+    -- create thruster particle systems
+    self.thruster.image = love.graphics.newImage("img/thruster_particle.png")
     self.thruster.left.psys = love.graphics.newParticleSystem(self.thruster.image, 1000)
     self.thruster.left.psys:setEmissionRate(1000)
     self.thruster.left.psys:setSpeed(500, 600)
@@ -138,10 +119,9 @@ function Dinosaur.initialize(self, x, y, dinoType)
 	self.thruster.right.psys:setTangentialAcceleration(1000)
 	self.thruster.right.psys:setRadialAcceleration(-2000)
 	self.thruster.right.psys:stop()
-    
-end
+end)
 
-function Dinosaur.draw(self)
+function Dinosaur:draw()
     -- thrusters
     local oldColorMode = love.graphics.getColorMode()
     local oldBlendMode = love.graphics.getBlendMode()
@@ -154,45 +134,33 @@ function Dinosaur.draw(self)
 
     -- body
     gfx.push()
-    gfx.translate(self.torso.body:getX(), self.torso.body:getY())
-    gfx.rotate(self.torso.body:getAngle())
-    gfx.setColor(255, 0, 0)
-    gfx.rectangle("fill", -50, -25, 100, 50)
+        gfx.translate(self.torso.body:getX(), self.torso.body:getY())
+        gfx.rotate(self.torso.body:getAngle())
+        gfx.setColor(255, 0, 0)
+        gfx.rectangle("fill", -50, -25, 100, 50)
     gfx.pop()
 
     -- head
     gfx.push()
-    gfx.translate(self.head.body:getX(), self.head.body:getY())
-    gfx.rotate(self.head.body:getAngle())
-    gfx.setColor(255, 0, 0)
-    gfx.rectangle("fill", -20, -20, 40, 40)
+        gfx.translate(self.head.body:getX(), self.head.body:getY())
+        gfx.rotate(self.head.body:getAngle())
+        gfx.setColor(255, 0, 0)
+        gfx.rectangle("fill", -20, -20, 40, 40)
     gfx.pop()
 
-        -- left leg
-        ---[[
+    -- tail
+    for i = 4, 1, -1 do
         gfx.push()
-        gfx.translate(self.foot.body:getX(), self.foot.body:getY())
-        gfx.rotate(self.foot.body:getAngle())
-        gfx.setColor(0, 255, 0)
-        gfx.rectangle("fill", -25, -25, 50, 50)
-        gfx.pop()
-
-    for i=4,1,-1 do
-        gfx.push()
-        gfx.translate(self.tail[i].body:getX(), self.tail[i].body:getY())
-        gfx.rotate(self.tail[i].body:getAngle())
-        --gfx.setColor(0, 0, 255)
-        --gfx.rectangle("fill", -5, -5, 20 - 2*i, 20 - 2*i)
-        gfx.setColor(255, 255, 255)
-        gfx.draw(resources["tail0" .. i], 0, 0, 0, 2, 2, 0, 0)
+            gfx.translate(self.tail[i].body:getX(), self.tail[i].body:getY())
+            gfx.rotate(self.tail[i].body:getAngle())
+            gfx.setColor(255, 255, 255)
+            gfx.draw(self.tail[i].image, 0, 0, 0, 2, 2, 0, 0)
         gfx.pop()
     end
-
-        --]]
 end
 
 
-function Dinosaur.update(self, dt)
+function Dinosaur:update(dt)
     local kb = love.keyboard
 
     dinoAngle = self.torso.body:getAngle()
@@ -265,6 +233,6 @@ function Dinosaur.update(self, dt)
     self.thruster.right.psys:update(dt)
 end
 
-function Dinosaur.right(self)
+function Dinosaur:right()
     self.torso.body:applyImpulse(0, -50, self.torso.body:getX() - 50, self.torso.body:getY())
 end
