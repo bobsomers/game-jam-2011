@@ -3,18 +3,22 @@ local phys = love.physics
 local vector = require "hump.vector"
 local class = require "hump.class"
 
-Missile = class(function(self, world, x, y, angle)
-    local offset = vector.new(-15, -35)
+Missile = class(function(self, world, x, y, angle, index)
+    local offset = vector.new(15, -35)
     offset = offset:rotated(angle)
 
     self.body = phys.newBody(world, x + offset.x, y + offset.y, 5, 10)
     self.shape = phys.newRectangleShape(self.body, 0, 0, 32, 20, 0)
     self.image = gfx.newImage("fx/missile.png")
     self.image:setFilter("nearest", "nearest")
-    self.body:setLinearVelocity(-100, 0)
+    self.body:setLinearVelocity(100, 0)
     self.body:setAngle(angle)
     self.shape:setCategory(5)
     self.shape:setMask(1, 2, 3, 4)
+    self.shape:setData({
+        kind = "missile",
+        i = index
+    })
     self.power = 300
     
     -- smoke trail particle system
@@ -39,11 +43,11 @@ function Missile:update(dt)
     -- update missle
     local force = vector.new(math.cos(self.body:getAngle() + math.pi), math.sin(self.body:getAngle() + math.pi))
     force:normalize_inplace()
-    self.body:applyForce(self.power * force.x, self.power * force.y)
+    self.body:applyForce(self.power * -force.x, self.power * -force.y)
     
     -- update smoke trail
     self.smoke.psys:setPosition(self.body:getX(), self.body:getY())
-    self.smoke.psys:setDirection(self.body:getAngle())
+    self.smoke.psys:setDirection(self.body:getAngle() + math.pi)
     self.smoke.psys:start()
     self.smoke.psys:update(dt)
 end

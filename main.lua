@@ -17,6 +17,7 @@ function love.load()
     
     -- create world
     world = phys.newWorld(0, 0, ARENA_WIDTH, ARENA_HEIGHT)
+    world:setCallbacks(physadd)
     world:setGravity(0, 350)
     
     -- terrain
@@ -50,6 +51,9 @@ function love.load()
     
     -- create missiles
     missiles = {}
+    
+    -- physics system removals
+    physremovals = {}
 end
 
 function love.update(dt)    
@@ -79,6 +83,11 @@ function love.update(dt)
     
     -- update physics world
     world:update(dt)
+    
+    -- process physics system removals
+    for _, info in ipairs(physremovals) do
+        table.remove(info.tab, info.index)
+    end
 end
 
 function love.draw()    
@@ -136,7 +145,26 @@ end
 function love.keypressed(key, unicode)
     if key == " " then
         dino:right()
-    elseif key == "left" then
-        missiles[#missiles + 1] = Missile(world, dino.torso.body:getX(), dino.torso.body:getY(), dino.torso.body:getAngle())
+    elseif key == "right" then
+        missileID = #missiles + 1
+        missiles[missileID] = Missile(world, dino.torso.body:getX(), dino.torso.body:getY(), dino.torso.body:getAngle(), missileID)
+    end
+end
+
+function physadd(shape1data, shape2data, contact)
+    if shape1data ~= nil then
+        if shape1data.kind == "missile" then
+            missiles[shape1data.i].shape:setMask(1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16)
+            table.insert(physremovals, {tab = missiles, index = shape1data.i})
+            table.remove(missiles, shape1data.i)
+        end
+    end
+    
+    if shape2data ~= nil then
+        if shape2data.kind == "missile" then
+            missiles[shape2data.i].shape:setMask(1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16)
+            table.insert(physremovals, {tab = missiles, index = shape2data.i})
+            table.remove(missiles, shape2data.i)
+        end
     end
 end
