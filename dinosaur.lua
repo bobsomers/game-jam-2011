@@ -24,8 +24,11 @@ Dinosaur = class(function(self, world, x, y)
     self.head.joint:setMaxMotorTorque(0)
     self.head.joint:setLimits(-math.pi / 6, math.pi / 6)
     self.head.joint:setLimitsEnabled(true)
-    self.head.image = gfx.newImage("bront/head_laser_awesome.png")
-    self.head.image:setFilter("nearest", "nearest")
+    self.head.closed = gfx.newImage("bront/head_laser.png")
+    self.head.closed:setFilter("nearest", "nearest")
+    self.head.open = gfx.newImage("bront/head_laser_awesome.png")
+    self.head.open:setFilter("nearest", "nearest")
+    self.head.image = self.head.closed
     
     -- create tail
     self.tail = {
@@ -192,6 +195,12 @@ function Dinosaur:update(dt)
     if self.thruster.right.dir:len() > 60 then
         self.thruster.right.psys:start()
         self.thruster.right.psys:setDirection(dinoAngle + (math.pi / 2))
+    end
+    
+    if self.thruster.left.dir:len() + self.thruster.right.dir:len() < 100 then
+        self.head.image = self.head.closed
+    else
+        self.head.image = self.head.open
     end
     
     self.thruster.left.psys:update(dt)
