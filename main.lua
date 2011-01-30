@@ -7,8 +7,8 @@ local vector = hump.vector
 
 SCREEN_WIDTH = 800
 SCREEN_HEIGHT = 600
-ARENA_WIDTH = 800
-ARENA_HEIGHT = 600
+ARENA_WIDTH = 2400
+ARENA_HEIGHT = 1200
 
 world = nil
 
@@ -30,6 +30,8 @@ function love.load()
     
     world = phys.newWorld(0, 0, 800, 600)
     world:setGravity(0, 350)
+    
+    background = gfx.newImage("world.png")
     
     left = Obstacle:new()
     left:initialize(2, ARENA_HEIGHT / 2, 5, ARENA_HEIGHT)
