@@ -6,6 +6,7 @@ local camera = require "hump.camera"
 dofile "dinosaur.lua"
 dofile "wall.lua"
 dofile "missile.lua"
+dofile "explosion.lua"
 
 SCREEN_WIDTH = 800
 SCREEN_HEIGHT = 600
@@ -17,6 +18,7 @@ function love.load()
     
     -- create world
     world = phys.newWorld(0, 0, ARENA_WIDTH, ARENA_HEIGHT)
+    world:setCallbacks(physadd, nil, nil, nil)
     world:setGravity(0, 350)
     
     -- terrain
@@ -34,10 +36,10 @@ function love.load()
     walls[#walls + 1] = Wall(world, ARENA_WIDTH / 2, ARENA_HEIGHT - 2, ARENA_WIDTH, 5)
     
     -- create player
-    dino = Dinosaur(world, 400, 300)
+    dino = Dinosaur(world, 2100, ARENA_HEIGHT - 200)
     
     -- create camera
-    cam = camera.new(vector.new(400, 300))
+    cam = camera.new(vector.new(2100, ARENA_HEIGHT - 200))
     cam.springK = 0.2
     cam.friction = 0.95
     cam.zoomV = 0
@@ -49,7 +51,14 @@ function love.load()
     end
     
     -- create missiles
-    missiles = {}
+    missiles = {
+        id = 1
+    }
+    
+    -- create explosions
+    explosions = {
+        id = 1
+    }
 end
 
 function love.update(dt)    
@@ -73,8 +82,20 @@ function love.update(dt)
     cam.zoom = cam.zoom + dz
     
     -- update missiles
-    for i, v in ipairs(missiles) do
-        v:update(dt)
+    for k, v in pairs(missiles) do
+        if k ~= "id" then
+            v:update(dt)
+        end
+    end
+    
+    -- update and cull explosions
+    for k, v in pairs(explosions) do
+        if k ~= "id" then
+            if love.timer.getTime() - v.spawnTime > 1000 then
+                v = nil
+            end
+            v:update(dt)
+        end
     end
     
     -- update physics world
@@ -115,8 +136,17 @@ function love.draw()
     dino:draw()
 
     -- draw missiles
-    for i, v in ipairs(missiles) do
-        v:draw()
+    for k, v in pairs(missiles) do
+        if k ~= "id" then
+            v:draw()
+        end
+    end
+    
+    -- draw explosions
+    for k, v in pairs(explosions) do
+        if k ~= "id" then
+            v:draw()
+        end
     end
     
     --[[
@@ -136,7 +166,41 @@ end
 function love.keypressed(key, unicode)
     if key == " " then
         dino:right()
-    elseif key == "left" then
-        missiles[#missiles + 1] = Missile(world, dino.torso.body:getX(), dino.torso.body:getY(), dino.torso.body:getAngle())
+    elseif key == "right" then
+        local dinovelX, dinovelY = dino.torso.body:getLinearVelocity()
+        missiles[tostring(missiles.id)] = Missile(world, dino.torso.body:getX(), dino.torso.body:getY(), dino.torso.body:getAngle(), vector.new(dinovelX, dinovelY), missiles.id)
+        missiles.id = missiles.id + 1
+    end
+end
+
+function physadd(shape1data, shape2data, contact)
+    if shape1data ~= nil then
+        if shape1data.kind == "missile" then
+            if missiles[tostring(shape1data.i)] ~= nil then
+                -- delete missile
+                missiles[tostring(shape1data.i)].body = nil
+                missiles[tostring(shape1data.i)].shape = nil
+                missiles[tostring(shape1data.i)] = nil
+                
+                -- create explosion
+                explosions[tostring(explosions.id)] = Explosion(shape1data.pos.x, shape1data.pos.y)
+                explosions.id = explosions.id + 1
+            end
+        end
+    end
+    
+    if shape2data ~= nil then
+        if shape2data.kind == "missile" then
+            if missiles[tostring(shape2data.i)] ~= nil then
+                -- delete missile
+                missiles[tostring(shape2data.i)].body = nil
+                missiles[tostring(shape2data.i)].shape = nil
+                missiles[tostring(shape2data.i)] = nil
+                
+                -- create explosion
+                explosions[tostring(explosions.id)] = Explosion(shape2data.pos.x, shape2data.pos.y)
+                explosions.id = explosions.id + 1
+            end
+        end
     end
 end

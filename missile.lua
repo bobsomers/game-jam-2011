@@ -3,19 +3,30 @@ local phys = love.physics
 local vector = require "hump.vector"
 local class = require "hump.class"
 
-Missile = class(function(self, world, x, y, angle)
-    local offset = vector.new(-15, -35)
+Missile = class(function(self, world, x, y, angle, dinovel, index)
+    local offset = vector.new(15, -35)
     offset = offset:rotated(angle)
 
     self.body = phys.newBody(world, x + offset.x, y + offset.y, 5, 10)
     self.shape = phys.newRectangleShape(self.body, 0, 0, 32, 20, 0)
     self.image = gfx.newImage("fx/missile.png")
     self.image:setFilter("nearest", "nearest")
-    self.body:setLinearVelocity(-100, 0)
     self.body:setAngle(angle)
+    self.body:setLinearVelocity(dinovel.x, dinovel.y)
     self.shape:setCategory(5)
     self.shape:setMask(1, 2, 3, 4)
+    self.shape:setData({
+        kind = "missile",
+        i = index
+    })
     self.power = 300
+    self.shove = 40
+    
+    -- give it an initial shove vertically away from the dino
+    local shovedir = vector.new(math.cos(angle - math.pi / 2), math.sin(angle - math.pi / 2))
+    shovedir:normalize_inplace()
+    self.body:applyImpulse(self.shove * shovedir.x, self.shove * shovedir.y)
+    --self.body:applyForce(self.power * -force.x, self.power * -force.y)
     
     -- smoke trail particle system
     self.smoke = {}
@@ -25,7 +36,7 @@ Missile = class(function(self, world, x, y, angle)
     self.smoke.psys:setSpeed(400, 500)
 	self.smoke.psys:setSize(0.5, 0.5)
 	self.smoke.psys:setColor(62, 62, 62, 255, 152, 152, 152, 0)
-	self.smoke.psys:setPosition(400, 300)
+	self.smoke.psys:setPosition(x, y)
 	self.smoke.psys:setLifetime(0.1)
 	self.smoke.psys:setParticleLife(0.2)
 	self.smoke.psys:setDirection(math.pi / 2)
@@ -39,11 +50,16 @@ function Missile:update(dt)
     -- update missle
     local force = vector.new(math.cos(self.body:getAngle() + math.pi), math.sin(self.body:getAngle() + math.pi))
     force:normalize_inplace()
-    self.body:applyForce(self.power * force.x, self.power * force.y)
+    self.body:applyForce(self.power * -force.x, self.power * -force.y)
+    
+    -- update shape data with position
+    local data = self.shape:getData()
+    data.pos = vector.new(self.body:getX(), self.body:getY())
+    self.shape:setData(data)
     
     -- update smoke trail
     self.smoke.psys:setPosition(self.body:getX(), self.body:getY())
-    self.smoke.psys:setDirection(self.body:getAngle())
+    self.smoke.psys:setDirection(self.body:getAngle() + math.pi)
     self.smoke.psys:start()
     self.smoke.psys:update(dt)
 end
