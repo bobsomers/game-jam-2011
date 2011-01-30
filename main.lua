@@ -5,6 +5,7 @@ local camera = require "hump.camera"
 
 dofile "dinosaur.lua"
 dofile "wall.lua"
+dofile "missile.lua"
 
 SCREEN_WIDTH = 800
 SCREEN_HEIGHT = 600
@@ -46,6 +47,9 @@ function love.load()
         vel = (vel + a) * cam.friction
         return vel
     end
+    
+    -- create missiles
+    missiles = {}
 end
 
 function love.update(dt)    
@@ -67,6 +71,11 @@ function love.update(dt)
     local dy = cam.posV.y * dt
     cam.pos = vector.new(cam.pos.x + dx, cam.pos.y + dy)
     cam.zoom = cam.zoom + dz
+    
+    -- update missiles
+    for i, v in ipairs(missiles) do
+        v:update(dt)
+    end
     
     -- update physics world
     world:update(dt)
@@ -105,6 +114,11 @@ function love.draw()
 
     dino:draw()
 
+    -- draw missiles
+    for i, v in ipairs(missiles) do
+        v:draw()
+    end
+    
     --[[
     -- thruster debug drawing
     gfx.setColor(0, 255, 0)
@@ -122,5 +136,7 @@ end
 function love.keypressed(key, unicode)
     if key == " " then
         dino:right()
+    elseif key == "left" then
+        missiles[#missiles + 1] = Missile(world, dino.torso.body:getX(), dino.torso.body:getY(), dino.torso.body:getAngle())
     end
 end
