@@ -1,7 +1,7 @@
 require "hump.vector"
 
-dofile "./dinosaur.lua"
-dofile "./obstacle.lua"
+dofile "dinosaur.lua"
+dofile "obstacle.lua"
 
 local vector = hump.vector
 
@@ -22,17 +22,17 @@ test = love.graphics.newImage("head01.png")
 
 resources = {}
 
-resources["tail01"] = love.graphics.newImage("img/tail01.png")
-resources["tail01"]:setFilter("nearest", "nearest")
+resources.tail01 = love.graphics.newImage("img/tail01.png")
+resources.tail01:setFilter("nearest", "nearest")
 
-resources["tail02"] = love.graphics.newImage("img/tail02.png")
-resources["tail02"]:setFilter("nearest", "nearest")
+resources.tail02 = love.graphics.newImage("img/tail02.png")
+resources.tail02:setFilter("nearest", "nearest")
 
-resources["tail03"] = love.graphics.newImage("img/tail03.png")
-resources["tail03"]:setFilter("nearest", "nearest")
+resources.tail03 = love.graphics.newImage("img/tail03.png")
+resources.tail03:setFilter("nearest", "nearest")
 
-resources["tail04"] = love.graphics.newImage("img/tail04.png")
-resources["tail04"]:setFilter("nearest", "nearest")
+resources.tail04 = love.graphics.newImage("img/tail04.png")
+resources.tail04:setFilter("nearest", "nearest")
 
 test:setFilter("nearest", "nearest")
 

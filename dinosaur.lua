@@ -11,7 +11,8 @@ function Dinosaur:new (o)
     o = o or { 
                 head = {},
                 foot = {},
-                torso = {}
+                torso = {},
+                images = {}
              }
 
     setmetatable(o, self)
@@ -101,6 +102,15 @@ function Dinosaur.initialize(self, x, y)
 	self.thruster.right.psys:setRadialAcceleration(-2000)
 	self.thruster.right.psys:stop()
     
+    -- load images
+    self.images.tail01 = gfx.newImage("img/tail01.png")
+    self.images.tail02 = gfx.newImage("img/tail02.png")
+    self.images.tail03 = gfx.newImage("img/tail03.png")
+    self.images.tail04 = gfx.newImage("img/tail04.png")
+    self.images.tail01:setFilter("nearest", "nearest")
+    self.images.tail02:setFilter("nearest", "nearest")
+    self.images.tail03:setFilter("nearest", "nearest")
+    self.images.tail04:setFilter("nearest", "nearest")
 end
 
 function Dinosaur.draw(self)
@@ -139,7 +149,7 @@ function Dinosaur.draw(self)
         --gfx.setColor(0, 0, 255)
         --gfx.rectangle("fill", -5, -5, 20 - 2*i, 20 - 2*i)
         gfx.setColor(255, 255, 255)
-        gfx.draw(resources["tail0" .. i], 0, 0, 0, 2, 2, 0, 0)
+        gfx.draw(self.images["tail0" .. i], 0, 0, 0, 2, 2, 0, 0)
         gfx.pop()
     end
 
