@@ -13,7 +13,7 @@ ARENA_HEIGHT = 1200
 
 function love.load()
     gfx.setBackgroundColor(0, 0, 0)
-    bg = gfx.newImage("world/bg.png")
+    sky = gfx.newImage("world/sky.png")
     
     -- create world
     world = phys.newWorld(0, 0, ARENA_WIDTH, ARENA_HEIGHT)
@@ -67,11 +67,12 @@ function love.update(dt)
 end
 
 function love.draw()    
+    -- draw background
+    local skyPos = vector.new(-cam.pos.x / 6, ((-cam.pos.y - 100) / 6) - 10)
+    gfx.draw(sky, skyPos.x, skyPos.y)
+
     -- begin world drawing
     cam:predraw()
-    
-    -- draw background
-    gfx.draw(bg, 0, 0)
 
     -- draw walls
     for k,v in pairs(walls) do
