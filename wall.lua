@@ -6,6 +6,7 @@ local class = require "hump.class"
 Wall = class(function(self, world, x, y, width, height)
     self.body = phys.newBody(world, x, y, 0, 0)
     self.shape = phys.newRectangleShape(self.body, 0, 0, width, height, 0)
+    self.shape:setCategory(16)
 end)
 
 function Wall:draw()
