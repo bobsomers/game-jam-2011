@@ -9,7 +9,7 @@ Game Development).
     THE NARRATIVE THUS FAR
 ================================================================================
 
-The dinosaur extinction was a government coverup. In actuality, time travellers
+The dinosaur extinction was a government coverup. In actuality, time travelers
 from the future went back 65 million years into the past, strapped jetpacks onto
 dinosaurs, and made them fight to the death with rocket launchers.
 
@@ -27,6 +27,17 @@ game. :)
 
 When time runs out, close the window and rerun to play again. Really. Sorry
 about that. :(
+
+================================================================================
+    CONTORLS
+================================================================================
+
+ENTER - Start the game from the title screen.
+A - Thrust jetpack to the left.
+D - Thrust jetpack to the right.
+SPACE - Right yourself if you get stuck upside down.
+LEFT ARROW - Shoot rockets from your tail.
+RIGHT ARROW - Shoot rockets from your back.
 
 ================================================================================
     KNOWN BUGS
@@ -68,7 +79,7 @@ Design:
     
 Middleware:
     Lua (http://lua.org)
-    LÖVE (http://love2d.org/)
+    LOVE (http://love2d.org/)
     HUMP (https://github.com/vrld/hump)
 
 Fonts:
