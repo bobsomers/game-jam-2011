@@ -10,15 +10,6 @@ love.filesystem.load("missile.lua")()
 love.filesystem.load("explosion.lua")()
 love.filesystem.load("platform.lua")()
 
---[[
-dofile "dinosaur.lua"
-dofile "trex.lua"
-dofile "wall.lua"
-dofile "missile.lua"
-dofile "explosion.lua"
-dofile "platform.lua"
---]]
-
 SCREEN_WIDTH = 800
 SCREEN_HEIGHT = 600
 ARENA_WIDTH = 2400
@@ -31,9 +22,13 @@ function love.load()
     
     -- create titles
     cpgd = gfx.newImage("title/cpgd.png")
+	cpgd:setFilter("nearest", "nearest")
     deadpixel = gfx.newImage("title/deadpixel.png")
+	deadpixel:setFilter("nearest", "nearest")
     esrb = gfx.newImage("title/esrb.png")
+	esrb:setFilter("nearest", "nearest")
     title = gfx.newImage("title/title.png")
+	title:setFilter("nearest", "nearest")
     
     -- create world
     world = phys.newWorld(0, 0, ARENA_WIDTH, ARENA_HEIGHT)
