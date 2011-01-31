@@ -3,10 +3,21 @@ local phys = love.physics
 local vector = require "hump.vector"
 local camera = require "hump.camera"
 
+love.filesystem.load("dinosaur.lua")()
+love.filesystem.load("trex.lua")()
+love.filesystem.load("wall.lua")()
+love.filesystem.load("missile.lua")()
+love.filesystem.load("explosion.lua")()
+love.filesystem.load("platform.lua")()
+
+--[[
 dofile "dinosaur.lua"
+dofile "trex.lua"
 dofile "wall.lua"
 dofile "missile.lua"
 dofile "explosion.lua"
+dofile "platform.lua"
+--]]
 
 SCREEN_WIDTH = 800
 SCREEN_HEIGHT = 600
@@ -82,14 +93,32 @@ function love.load()
     timerFont = gfx.newFont("fonts/prehistoric.ttf", 48)
     overFont = gfx.newFont("fonts/prehistoric.ttf", 72)
     infoFont = gfx.newFont("fonts/prehistoric.ttf", 24)
-    
+
+    platforms = {}
+    platforms[1] = Platform(world, 256, ARENA_HEIGHT - 500, 512, 128)
+
+    platforms[2] = Platform(world, ARENA_WIDTH - 256, ARENA_HEIGHT - 500, 512, 128)
+
+    platforms[3] = Platform(world, ARENA_WIDTH / 2, ARENA_HEIGHT - 750, 512, 128)
+
+    -- create enemies
+    enemies = {}
+    enemies[1] = Trex(world, ARENA_WIDTH / 2, ARENA_HEIGHT - 120, ARENA_WIDTH / 2 - 256, ARENA_WIDTH / 2 + 256)
+    enemies[2] = Trex(world, ARENA_WIDTH / 2, ARENA_HEIGHT - (120 + 750 + 64), ARENA_WIDTH / 2 - (256 - 128), ARENA_WIDTH / 2 + (256 - 128))
+
+    enemies[3] = Trex(world, 256, ARENA_HEIGHT - 564 - 120, 128, 512 - 128)
+    enemies[4] = Trex(world, ARENA_WIDTH - 256, ARENA_HEIGHT - 564 - 120, ARENA_WIDTH - (512 - 128), ARENA_WIDTH -128)
+ 
     -- sound
     bgmusic = love.audio.newSource("sound/music.mp3")
     bgmusic:setVolume(0.5)
+    titlemusic = love.audio.newSource("sound/titles.mp3")
     jetpacksound = love.audio.newSource("sound/jetpack.wav", "static")
     jetpacksound:setLooping(true)
     boomsound = love.audio.newSource("sound/boom.wav", "static")
     launchsound = love.audio.newSource("sound/launch.wav", "static")
+    
+    love.audio.play(titlemusic)
 end
 
 function love.update(dt)
@@ -119,20 +148,19 @@ function love.update(dt)
                 v:update(dt)
             end
         end
-        
-        -- update lasers
-        for k, v in pairs(lasers) do
-            if k ~= "id" then
-                v:update(dt)
-            end
-        end
-        
+
         -- update and cull explosions
         for k, v in pairs(explosions) do
             if k ~= "id" then
                 if love.timer.getTime() - v.spawnTime > 1000 then
                     v = nil
                 end
+                v:update(dt)
+            end
+        end
+
+        for k, v in pairs(enemies) do
+            if k ~= "id" then
                 v:update(dt)
             end
         end
@@ -192,16 +220,21 @@ function love.draw()
         end
 
         dino:draw()
+            
+        for k, v in pairs(platforms) do
+            if k ~= "id" then
+                v:draw()
+            end
+        end
 
-        -- draw missiles
-        for k, v in pairs(missiles) do
+        for k, v in pairs(enemies) do
             if k ~= "id" then
                 v:draw()
             end
         end
         
-        -- draw lasers
-        for k, v in pairs(lasers) do
+        -- draw missiles
+        for k, v in pairs(missiles) do
             if k ~= "id" then
                 v:draw()
             end
@@ -280,6 +313,7 @@ function love.keypressed(key, unicode)
     if gameState == "title" then
         gameState = "playing"
         gameStartTime = love.timer.getTime()
+        love.audio.stop(titlemusic)
         love.audio.play(bgmusic)
     elseif gameState == "playing" then
         if key == " " then
@@ -324,6 +358,12 @@ function physadd(shape1data, shape2data, contact)
                 love.audio.stop(boomsound)
                 love.audio.rewind(boomsound)
                 love.audio.play(boomsound)
+                
+                if shape2data ~= nil then
+                    if shape2data.kind == "trex" then
+                        gameScore = gameScore + 1
+                    end
+                end
             end
         end
     end
@@ -343,6 +383,12 @@ function physadd(shape1data, shape2data, contact)
                 love.audio.stop(boomsound)
                 love.audio.rewind(boomsound)
                 love.audio.play(boomsound)
+                
+                if shape1data ~= nil then
+                    if shape1data.kind == "trex" then
+                        gameScore = gameScore + 1
+                    end
+                end
             end
         end
     end

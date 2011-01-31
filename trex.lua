@@ -150,6 +150,15 @@ Trex = class(function(self, world, x, y, xmin, xmax)
         self.tail[i].image:setFilter("nearest", "nearest")
     end
     
+    self.torso.shape:setData({kind = "trex"})
+    self.head.shape:setData({kind = "trex"})
+    self.tail[1].shape:setData({kind = "trex"})
+    self.tail[2].shape:setData({kind = "trex"})
+    self.tail[3].shape:setData({kind = "trex"})
+    self.tail[4].shape:setData({kind = "trex"})
+    self.tail[5].shape:setData({kind = "trex"})
+    self.neck.seg1.shape:setData({kind = "trex"})
+    self.neck.seg2.shape:setData({kind = "trex"})
 end)
 
 function Trex:draw()
